@@ -1,0 +1,8 @@
+.history
+build
+.vscode
+TreeRivers
+temp
+huan
+__pychache__
+*.pyc

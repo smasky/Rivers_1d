@@ -1,0 +1,25 @@
+@cython.boundscheck(False) #不检查边界
+@cython.wraparound(False) #[-1]取消
+@cython.nonecheck(False) #没有None
+@cython.cdivision(True) #不检查除以0
+
+
+导出cython到.py 需要定义def或者cpd
+
+当python对象传入时自动转换类型
+def spam(int i, char *s)=
+def spam(p_i,p_s)
+cdef int i=i
+cdef char *s=p_s
+
+
+cdef int spam() except -1:
+发生异常返回 -1
+
+扩展类型可以cimport通过将其定义分成两部分来使用，一部分在定义文件中，另一部分在相应的实现文件中。
+
+扩展类型的定义部分只能声明 C 属性和 C 方法，不能声明 Python 方法，并且必须声明该类型的所有 C 属性和 C 方法。
+
+实现部分必须实现定义部分中声明的所有 C 方法，并且不能再添加任何 C 属性。它还可以定义 Python 方法。
+
+这是定义和导出扩展类型的模块以及使用它的另一个模块的示例：
