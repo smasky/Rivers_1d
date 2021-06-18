@@ -1,10 +1,10 @@
 '''
 Author: smasky
 Date: 2021-06-02 16:34:36
-LastEditTime: 2021-06-16 08:52:13
+LastEditTime: 2021-06-17 22:13:17
 LastEditors: smasky
-Description: 
-FilePath: \cytest\main.py
+Description: python version for 1d-rivers computaion
+FilePath: \Rivers_1d\main.py
 You will never know unless you try
 '''
 from pandas.core.arrays.sparse import dtype
@@ -20,7 +20,7 @@ In_Z = 3.2
 path = 'test6.db'
 # reload_database(path)
 conn=link_database(path)
-#conn=create_project(path,"rivers.txt","nodes.txt","sections.txt","boundary.txt")
+#conn=create_project(path,"setting.txt","rivers.txt","nodes.txt","sections.txt","boundary.txt")
 DT=100
 Time=DT*1000
 
@@ -192,7 +192,7 @@ for t in range(300):
     p,l,u =  lu(Nodes_matrix)
     y = solve(p.dot(l), B)
     all_Z = solve(u, y)
-    #print(t,all_Z)
+    print(t,all_Z)
     ##################################
     #time_c=time.time()
     #result=pd.DataFrame(columns=['Name_ID','Sec_ID','Q','Z'])

@@ -1,11 +1,14 @@
 # distutils: language = c++
 import numpy as np
+cimport numpy
 import Database_Tools as DT
 import scipy
 import datetime
 from libc.stdlib cimport malloc, free
 from rivers_1d cimport Control
-
+cdef int C_Outer_n=0
+cdef int C_Inner_n=0
+cdef int C_total_times=0
 cdef Control c=Control()
 
 cpdef link_database(path):
@@ -24,6 +27,8 @@ cpdef begin_project(conn):
     Boundary=DT.load_boundary(conn)
     Setting=DT.load_setting(conn)
     N_I,N_O=DT.load_nodes_num(conn)
+    Outer_n=N_O
+    Inner_n=N_I
     #########################setting################################
     In_Z=Setting.at[0,'In_Z']
     In_Q=Setting.at[0,'In_Q']
@@ -31,7 +36,9 @@ cpdef begin_project(conn):
     End_time=datetime.datetime.strptime(Setting.at[0,'End_time'],"%Y-%m-%d-%H:%M")
     deta_time=(End_time-Begin_time).seconds
     Step=Setting.at[0,'Step']
+    C_total_times=step
     Time_index=np.linspace(1,deta_time,np.int(Step))
+    
     dt=Time_index[1]-Time_index[0]
     dev_sita=Setting.at[0,'Dev_sita']
     ##########################################################
@@ -189,6 +196,7 @@ cpdef begin_project(conn):
     ##############################################
 
 
+
 cpdef p_add_Reach(infos):
     for info in infos:
         if('time_series' in info):
@@ -234,3 +242,21 @@ cpdef p_set_time_setting(int t,int total_times):
 cpdef p_set_nodes_setting(double[:] A,double[:] b,int[:] Ri, int[:] Dr, int[:] sign_nodes,
         int length_A,int length_b):
     c.set_nodes_setting(&A[0],&b[0],&Ri[0],&Dr[0],&sign_nodes[0],length_A,length_b)
+cpdef p_extract_result():
+    cdef:
+        int C_n
+        int *river_id
+        int *reach_id
+        int *section_id
+    for C_n in range(C_Outer_n):
+        #TODO 从外节点提取结果
+    for C_n in range(C_Inner_n):
+        #TODO 从内节点提取结果
+    
+    #TODO 输入到数据库 结果表
+cdef _extrace_result_n(int C_n,int C_Sign,int *river_id,int *reach_id,int *section_id,double **C_result_Q,double **C_result_Z):
+    if C_Sign==0:
+        c.get_result_outer_n(C_n,C_river_id,C_reach_id,C_section_id,C_result_Q,C_result_Z)
+    else:
+        c.get_result_inner_n(C_n,C_river_id,C_reach_id,C_section_id,C_result_Q,C_result_Z)
+

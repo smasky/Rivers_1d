@@ -1,3 +1,12 @@
+/*
+ * @Author: smasky
+ * @Date: 2021-06-16 21:43:52
+ * @LastEditTime: 2021-06-17 22:17:31
+ * @LastEditors: smasky
+ * @Description: Integrate all Reaches into rivers network 
+ * @FilePath: \Rivers_1d\control.h
+ * You will never know unless you try
+ */
 #include <vector>
 #include <iostream>
 #include "reaches.h"

@@ -1,5 +1,13 @@
-// 1d rivers network programe
-// smasky 20210607
+/*
+ * @Author: smasky
+ * @Date: 2021-06-16 21:43:52
+ * @LastEditTime: 2021-06-17 22:15:34
+ * @LastEditors: smasky
+ * @Description: reaches class(Reach,OuterReach,InnerReach)
+ * @FilePath: \Rivers_1d\reaches.h
+ * You will never know unless you try
+ */
+
 #include<cmath>
 #include <algorithm>
 #include <math.h>

@@ -1,11 +1,18 @@
+/*
+ * @Author: smasky
+ * @Date: 2021-06-16 21:43:52
+ * @LastEditTime: 2021-06-17 22:15:54
+ * @LastEditors: smasky
+ * @Description: reaches class(Reach,OuterReach,InnerReach)
+ * @FilePath: \Rivers_1d\reaches.cpp
+ * You will never know unless you try
+ */
 #include "reaches.h"
 #include <iostream>
-// 1d rivers network programe
-// smasky 20210607
+
 Reach::Reach(int river_id, int reach_id,int num_sec,int dt,double dev_sita,double roughness,int *section_id,
 		double *sec_x,double *sec_y,int length_sec_xy,int *points_sec, double *mileage, double *Q, double *Z):m_river_id(river_id),
 		m_reach_id(reach_id),m_num_sec(num_sec),m_dt(dt),m_dev_sita(dev_sita),m_roughness(roughness){
-		//////////////////////////////////////////////////
 			m_Q= new double[m_num_sec];
 			memcpy(m_Q,Q,m_num_sec*sizeof(double));
 			m_Z= new double[m_num_sec];
@@ -20,18 +27,16 @@ Reach::Reach(int river_id, int reach_id,int num_sec,int dt,double dev_sita,doubl
 				//m_points_sec[i]=points_sec[i];
 				//m_section_id[i]=section_id[i];
 			//}
-		////////////////////////////////////////////////
 			m_C=new double[m_num_sec];
 			m_D=new double[m_num_sec];
 			m_E=new double[m_num_sec];
 			m_F=new double[m_num_sec];
 			m_G=new double[m_num_sec];
 			m_fai=new double[m_num_sec];
-			/////////////////////////////////////////////
-			/////////////////////////////////////////////
+
 			m_sec_x=new double[length_sec_xy];
 			m_sec_y=new double[length_sec_xy];
-			/////////////////////////////////////////////////
+
 			m_begin_sec_x=new double*[m_num_sec];
 			m_begin_sec_y=new double*[m_num_sec];
 
@@ -147,10 +152,10 @@ OuterReach::OuterReach(int river_id,int reach_id,int num_sec, int dt, int begin_
 		double *sec_x,double *sec_y,int length_sec_xy,int *points_sec, double *mileage, double *Q, double *Z):Reach(river_id,
 		reach_id,num_sec,dt,dev_sita,roughness,section_id, sec_x,sec_y,length_sec_xy,points_sec,mileage,Q,Z),
 		m_begin_node(begin_node),m_end_node(end_node),m_is_resverse(is_resverse),m_type_node(type_node),m_t(t),m_1d_end_end(t_1d_end_end){
-			/////////////////////////////////////
+			
 			m_time_series=new double[total_times];
 			memcpy(m_time_series,time_series,total_times*sizeof(double));
-			//////////////////////////////////////
+			
 			m_P=new double[m_num_sec];
 			m_V=new double[m_num_sec];
 			m_S=new double[m_num_sec];

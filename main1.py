@@ -1,10 +1,10 @@
 '''
 Author: smasky
 Date: 2021-06-13 00:19:23
-LastEditTime: 2021-06-16 08:34:01
+LastEditTime: 2021-06-17 22:14:11
 LastEditors: smasky
-Description: 
-FilePath: \cytest\main1.py
+Description: Use cython to 1d_rivers computation
+FilePath: \Rivers_1d\main1.py
 You will never know unless you try
 '''
 from Database_Tools import *
@@ -14,7 +14,7 @@ import time
 
 # ###################连接数据库
 a = time.time()
-path = 'test13.db'
+path = 'test6.db'
 conn = rivers_1d.link_database(path)
 rivers_1d.begin_project(conn)
 b = time.time()

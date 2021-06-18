@@ -1,3 +1,12 @@
+/*
+ * @Author: smasky
+ * @Date: 2021-06-16 21:43:52
+ * @LastEditTime: 2021-06-17 23:19:27
+ * @LastEditors: smasky
+ * @Description: Integrate all Reaches into rivers network 
+ * @FilePath: \Rivers_1d\control.cpp
+ * You will never know unless you try
+ */
 #include "control.h"
 #include "utils.h"
 Control::Control(){
@@ -145,6 +154,27 @@ int Control::get_result_outer_n(int n,int *river_id,int *reach_id,int *section_i
 	}
 
 	OuterReach *tmp=m_outer[n];
+	*river_id=tmp->m_river_id;
+	*reach_id=tmp->m_reach_id;
+
+	section_id=tmp->m_section_id;
+
+	result_Q=tmp->m_result_Q;
+	result_Z=tmp->m_result_Z;
+
+	return 1;
+}
+
+int Control::get_result_inner_n(int n,int *river_id,int *reach_id,int *section_id,double **result_Q, double **result_Z){
+	if(has_begin==0){
+		return -1;
+	}
+
+	if(n>=m_size_inner){
+		return -2;
+	}
+
+	InnerReach *tmp=m_inner[n];
 	*river_id=tmp->m_river_id;
 	*reach_id=tmp->m_reach_id;
 

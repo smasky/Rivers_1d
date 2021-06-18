@@ -1,3 +1,12 @@
+'''
+Author: smasky
+Date: 2021-06-16 21:43:52
+LastEditTime: 2021-06-17 22:14:52
+LastEditors: smasky
+Description: python versions for 1d_rivers 
+FilePath: \Rivers_1d\Reach_class.py
+You will never know unless you try
+'''
 import numpy as np
 import math
 

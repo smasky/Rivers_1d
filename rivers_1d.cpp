@@ -8,7 +8,7 @@
         ],
         "include_dirs": [
             ".",
-            "E:\\anaconda\\lib\\site-packages\\numpy\\core\\include"
+            "E:\\anaconda\\envs\\rivers\\lib\\site-packages\\numpy\\core\\include"
         ],
         "language": "c++",
         "name": "rivers_1d",

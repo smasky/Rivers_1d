@@ -1,7 +1,15 @@
+'''
+Author: smasky
+Date: 2021-06-16 21:43:52
+LastEditTime: 2021-06-16 23:23:06
+LastEditors: smasky
+Description: 
+FilePath: \Rivers_1d\setup.py
+You will never know unless you try
+'''
 from setuptools import setup,Extension
 from Cython.Build import cythonize
 import numpy
-import scipy
 setup(ext_modules = cythonize(Extension(
 'rivers_1d',
 sources=['rivers_1d.pyx','utils.cpp','control.cpp','reaches.cpp'],
