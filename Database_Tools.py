@@ -190,7 +190,6 @@ def read_nodes(path,conn):
         script="INSERT INTO NODES (NODE_ID,NAME_ID,Mileage,If_out) VALUES(?,?,?,?)"
         conn.execute(script,(raw[1],raw[5],raw[3],raw[4]))
         conn.commit()
-
 def read_sections(path,conn):
     with open(path,'r') as f:
         lines=f.readlines()
@@ -322,37 +321,3 @@ def load_setting(conn):
     Setting=pd.read_sql_query('SELECT * FROM SETTING', conn)
     return Setting
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-'''
-conn=link_database('test7.db')
-conn.close()
-conn=sqlite3.connect('test7.db')
-read_basic_rivers('rivers.txt',conn)
-read_nodes('nodes.txt',conn)
-read_sections('sections.txt',conn)
-read_boundary('boundary.txt',conn)
-'''

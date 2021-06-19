@@ -6,10 +6,13 @@ import scipy
 import datetime
 from libc.stdlib cimport malloc, free
 from rivers_1d cimport Control
+
+Time_index=0
 cdef int C_Outer_n=0
 cdef int C_Inner_n=0
 cdef int C_total_times=0
 cdef Control c=Control()
+cdef double *C_time_series
 
 cpdef link_database(path):
     conn=DT.link_database(path)
@@ -37,8 +40,11 @@ cpdef begin_project(conn):
     deta_time=(End_time-Begin_time).seconds
     Step=Setting.at[0,'Step']
     C_total_times=step
+
     Time_index=np.linspace(1,deta_time,np.int(Step))
-    
+    double[::1] tmp_index=Time_index
+    C_time_series=&tmp_index[0]
+
     dt=Time_index[1]-Time_index[0]
     dev_sita=Setting.at[0,'Dev_sita']
     ##########################################################
@@ -245,18 +251,29 @@ cpdef p_set_nodes_setting(double[:] A,double[:] b,int[:] Ri, int[:] Dr, int[:] s
 cpdef p_extract_result():
     cdef:
         int C_n
-        int *river_id
-        int *reach_id
-        int *section_id
+        int *C_num_sec
+        int *C_river_id
+        int *C_reach_id
+        int *C_section_id
+        double *C_result_Q
+        double *C_result_Z
     for C_n in range(C_Outer_n):
-        #TODO 从外节点提取结果
+        _extrace_result_n(C_n,0,C_river_id,C_reach_id,C_num_sec,C_section_id,C_result_Q,C_result_Z)
+        cdef double[:,::1] tmp_Q=<double[:total_times*C_num_sec]> C_result_Q
+        cdef double[:,::1] tmp_Z=<double[:total_times*C_num_sec]> C_result_Z
+        P_Q=np.array(tmp_Q,dtype=np.float).reshape((:,C_num_sec))
+        P_Z=np.array(tmp_Z,dtype=np.float).reshape((:,C_num_sec))
+
+
+
     for C_n in range(C_Inner_n):
+        pass
         #TODO 从内节点提取结果
     
     #TODO 输入到数据库 结果表
-cdef _extrace_result_n(int C_n,int C_Sign,int *river_id,int *reach_id,int *section_id,double **C_result_Q,double **C_result_Z):
+cdef _extrace_result_n(int C_n,int C_Sign,int *river_id,int *reach_id,int *C_num_sec,int *section_id,double **C_result_Q,double **C_result_Z):
     if C_Sign==0:
-        c.get_result_outer_n(C_n,C_river_id,C_reach_id,C_section_id,C_result_Q,C_result_Z)
+        c.get_result_outer_n(C_n,C_river_id,C_reach_id,C_num_sec,C_section_id,C_result_Q,C_result_Z)
     else:
-        c.get_result_inner_n(C_n,C_river_id,C_reach_id,C_section_id,C_result_Q,C_result_Z)
+        c.get_result_inner_n(C_n,C_river_id,C_reach_id,C_num_sec,C_section_id,C_result_Q,C_result_Z)
 

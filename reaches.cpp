@@ -1,10 +1,10 @@
 /*
  * @Author: smasky
  * @Date: 2021-06-16 21:43:52
- * @LastEditTime: 2021-06-17 22:15:54
+ * @LastEditTime: 2021-06-18 15:00:21
  * @LastEditors: smasky
  * @Description: reaches class(Reach,OuterReach,InnerReach)
- * @FilePath: \Rivers_1d\reaches.cpp
+ * @FilePath: \cytest\reaches.cpp
  * You will never know unless you try
  */
 #include "reaches.h"
@@ -161,23 +161,11 @@ OuterReach::OuterReach(int river_id,int reach_id,int num_sec, int dt, int begin_
 			m_S=new double[m_num_sec];
 			m_T=new double[m_num_sec];
 
-			m_result_Q=new double*[total_times];
-			for (int i=0;i<total_times;i++){
-				m_result_Q[i]=new double[m_num_sec];
-			}
-
-			m_result_Z=new double*[total_times];
-			for (int i=0;i<total_times;i++){
-				m_result_Z[i]=new double[m_num_sec];
-			}
-
+			m_result_Q=new double[total_times*m_num_sec];
+			m_result_Z=new double[total_times*m_num_sec];
 		}
 OuterReach::~OuterReach(){
 	delete []m_P;delete []m_V;delete []m_S;delete []m_T;
-	for (int i=0;i<m_num_sec;i++){
-		delete []m_result_Q[i];
-		delete []m_result_Z[i];
-	}
 	delete []m_result_Q;
 	delete []m_time_series;
 	delete []m_result_Z;
@@ -274,13 +262,13 @@ void OuterReach::recompute_Q_Z(double *all_Z){
 	//TODO  result new double*[total_times];
 	if(m_is_resverse==1){
 		for (int i=0;i<m_num_sec;i++){
-		m_result_Q[m_t][m_num_sec-1-i]=-m_Q[i];
-		m_result_Z[m_t][m_num_sec-1-i]=m_Z[i];
+		m_result_Q[m_t*m_num_sec+m_num_sec-1-i]=-m_Q[i];
+		m_result_Z[m_t*m_num_sec+m_num_sec-1-i]=m_Z[i];
 		}
 	}else{
 		for (int i=0;i<m_num_sec;i++){
-		m_result_Q[m_t][i]=m_Q[i];
-		m_result_Z[m_t][i]=m_Z[i];
+		m_result_Q[m_t*m_num_sec+i]=m_Q[i];
+		m_result_Z[m_t*m_num_sec+i]=m_Z[i];
 		}
 	}
 	// TMEP: update m_t
@@ -304,23 +292,12 @@ InnerReach::InnerReach(int river_id,int reach_id,int num_sec, int dt, int begin_
 			m_eta=new double[m_num_sec];
 			m_gama=new double[m_num_sec];
 
-			m_result_Q=new double*[total_times];
-			for (int i=0;i<total_times;i++){
-				m_result_Q[i]=new double[m_num_sec];
-			}
-
-			m_result_Z=new double*[total_times];
-			for (int i=0;i<total_times;i++){
-				m_result_Z[i]=new double[m_num_sec];
-			}
+			m_result_Q=new double[total_times*m_num_sec];
+			m_result_Z=new double[total_times*m_num_sec];
 		}
 InnerReach::~InnerReach(){
 	delete []m_alpha;delete []m_zeta;delete []m_beta;delete []m_sita;delete []m_eta;delete []m_gama;
 
-	for (int i=0;i<m_total_times;i++){
-		delete []m_result_Q[i];
-		delete []m_result_Z[i];
-	}
 	delete []m_result_Q;
 	delete []m_result_Z;
 }
@@ -400,7 +377,7 @@ void InnerReach::recompute_Q_Z(double *all_Z){
 	m_Z[0]=Za;m_Z[m_num_sec-1]=Zb;;m_Q[0]=Q1;m_Q[m_num_sec-1]=Q2;
 
 	for (int i=0;i<m_num_sec;i++){
-		m_result_Q[m_t][i]=m_Q[i];
-		m_result_Z[m_t][i]=m_Z[i];
+		m_result_Q[m_t*m_num_sec+i]=m_Q[i];
+		m_result_Z[m_t*m_num_sec+i]=m_Z[i];
 	}
  }

@@ -17,6 +17,6 @@ cdef extern from "control.h":
 
         int get_size_inner()
 
-        int get_result_outer_n(int n,int *river_id,int *reach_id,int *section_id,double **result_Q, double **result_Z)
+        int get_result_outer_n(int n,int *river_id,int *reach_id,int *num_sec,int *section_id,double **result_Q, double **result_Z)
 
-        int get_result_inner_n(int n,int *river_id,int *reach_id,int *section_id,double **result_Q, double **result_Z)
+        int get_result_inner_n(int n,int *river_id,int *reach_id,int *num_sec,int *section_id,double **result_Q, double **result_Z)

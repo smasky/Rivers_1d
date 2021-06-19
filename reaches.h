@@ -1,10 +1,10 @@
 /*
  * @Author: smasky
  * @Date: 2021-06-16 21:43:52
- * @LastEditTime: 2021-06-17 22:15:34
+ * @LastEditTime: 2021-06-18 14:49:49
  * @LastEditors: smasky
  * @Description: reaches class(Reach,OuterReach,InnerReach)
- * @FilePath: \Rivers_1d\reaches.h
+ * @FilePath: \cytest\reaches.h
  * You will never know unless you try
  */
 
@@ -54,7 +54,7 @@ class OuterReach:public Reach
 
 	public:
 		int m_t,m_total_times;
-		double **m_result_Q,**m_result_Z;
+		double *m_result_Q,*m_result_Z;
 		OuterReach(int river_id,int reach_id,int num_sec, int dt, int begin_node, int end_node,int t_1d_end_end,int type_node,
 		int is_resverse, double dev_sita, double roughness,int t,int total_times, int *section_id, double *time_series,
 		double *sec_x,double *sec_y,int length_sec_xy,int *points_sec,double *mileage, double *Q, double *Z);
@@ -82,7 +82,7 @@ class InnerReach:public Reach
 		
 	public:
 		int m_t,m_total_times;
-		double **m_result_Q,**m_result_Z;
+		double *m_result_Q,*m_result_Z;
 		InnerReach(int river_id,int reach_id,int num_sec, int dt, int begin_node, int end_node,
 		int t_1d_begin_begin,int t_1d_begin_end,int t_1d_end_end,int t_1d_end_begin,double dev_sita, 
 		double roughness,int t,int total_times, int *section_id,double *sec_x,double *sec_y,
