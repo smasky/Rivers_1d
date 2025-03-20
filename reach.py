@@ -1,8 +1,11 @@
 class Reach():
     
-    def __init__(self, ID, length, forwardNode = None, backwardNode = None):
+    def __init__(self, ID, fdMi, bdMi, fdNode = None, bdNode = None):
         
         self.ID = ID
-        self.length = length
-        self.forwardNode = forwardNode
-        self.backwardNode = backwardNode
+        self.fdMi = fdMi
+        self.bdMi = bdMi
+        self.fdNode = fdNode
+        self.bdNode = bdNode
+        
+        self.secID = []

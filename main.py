@@ -1,10 +1,10 @@
 '''
 Author: smasky
 Date: 2021-06-02 16:34:36
-LastEditTime: 2021-06-17 22:13:17
+LastEditTime: 2025-03-20 09:34:34
 LastEditors: smasky
 Description: python version for 1d-rivers computaion
-FilePath: \Rivers_1d\main.py
+FilePath: \River1d\main.py
 You will never know unless you try
 '''
 from pandas.core.arrays.sparse import dtype
@@ -29,7 +29,6 @@ NT=int(Time/DT)
 Inner_reaches=[]
 Outer_reaches=[]
 N_I,N_O=load_nodes_num(conn)
-
 
 #####################
 Time_index=np.arange(1,Time+DT+1,DT,dtype=float)
