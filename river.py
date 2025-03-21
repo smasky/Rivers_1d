@@ -1,6 +1,6 @@
 import bisect
-from .section import Section
-from .reach import Reach
+from section import Section
+from reach import Reach
 class River():
     
     def __init__(self, name, ID, length):
@@ -9,9 +9,10 @@ class River():
         self.length = length
         self.ID = ID
         
+        self.MIL_SEC_ID = {}
+        
         self.rchs = []
         self.secs = []
-        self.Mis = None
         
         self.nRch = 0
         self.nSec = 0
@@ -25,6 +26,8 @@ class River():
     def addSec(self, mil, data):
         
         self.nSec +=1
+        self.MIL_SEC_ID[mil] = self.nSec
+        
         sec = Section(self.nSec, mil, data)
         self.secs.append(sec)
     
@@ -34,5 +37,4 @@ class River():
         
         for rch in self.reaches:
             self.Mis.append(rch.bdMi)
-    
     

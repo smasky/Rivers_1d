@@ -1,9 +1,9 @@
 import re
 import numpy as np
 
-from .river import River
-from .reach import Reach
-from .node import InnerNode, OutsideNode
+from river import River
+from reach import Reach
+from node import InnerNode, OutsideNode
 
 class Network():
     def __init__(self, riverPath, nodePath, sectionPath):
@@ -18,7 +18,8 @@ class Network():
         self.readNodeInfo(nodePath)
         
         self.generateRchAndNode()
-        
+        self.readSecInfo(sectionPath)
+        a = 1
     
     def readRiverInfo(self, path):
         
@@ -29,7 +30,7 @@ class Network():
                 name = line[0]
                 length = float(line[1])
                 self.NA_ID_RV[name] = self.ID_RV
-                self.RV_ND[self.ID_RV].setdefault([])
+                self.RV_ND.setdefault(self.ID_RV, [])
                 
                 self.RVs[self.ID_RV] = River(name, self.ID_RV, length)
                 
@@ -45,8 +46,8 @@ class Network():
                     num = int(len(line) / 2)
                     
                     for i in range(num):
-                        name = line[i]
-                        mileage = float(line[i + 1])
+                        name = line[2 * i]
+                        mileage = float(line[2 * i + 1])
                         ID = self.NA_ID_RV[name]
                         
                         self.RV_ND[ID].append((mileage, self.ID_ND, 1))
@@ -62,8 +63,11 @@ class Network():
             i=0
             while True:
                 
+                if i >= totalL:
+                    break
+                
                 line = lines[i]
-                match = re.match("Name\s*(\w+)")
+                match = re.match("Name\s*(\w+)", line)
                 
                 if match:
                     name = match.group(1); rvID = self.NA_ID_RV[name]
@@ -72,7 +76,7 @@ class Network():
                     i += 1
                     rough = float(re.match("Roughness\s*(\d+(\.\d+)?)", lines[i]).group(1))
                     i += 1
-                    num = int(re.match("Roughness\s*(\d+)", lines[i]).group(1))
+                    num = int(re.match("Num\s*(\d+)", lines[i]).group(1))
                     i += 1
                     
                     data = np.zeros((num, 3), dtype = np.float32)
@@ -91,6 +95,9 @@ class Network():
                         i += 1
                     
                     self.RVs[rvID].addSec(mil, data)
+
+                else:
+                    i += 1
                         
     def generateRchAndNode(self):
     
@@ -98,7 +105,7 @@ class Network():
             
             ID_RCH = 1
             
-            length = self.Rivers[rvID].length
+            length = self.RVs[rvID].length
             
             infos.sort()
             
@@ -108,7 +115,7 @@ class Network():
             
             if infos[-1][0] <= length:
                 self.ID_ND += 1
-                infos.insert(-1, (length, self.ID_ND, 0))
+                infos.append((length, self.ID_ND, 0))
 
             for i in range( len(infos) -1 ):
                 
@@ -127,7 +134,6 @@ class Network():
                     bdNode = InnerNode(infos[i+1][1]) if infos[i+1][2] else OutsideNode(infos[i+1][1])
                     self.NDs[infos[i+1][1]] = bdNode
                     
-                River.addRch(fdMi, bdMi, fdNode, bdNode)
+                self.RVs[rvID].addRch(fdMi, bdMi, fdNode, bdNode)
                 fdNode.addRch(rvID, ID_RCH)
                 bdNode.addRch(rvID, ID_RCH)
-    
