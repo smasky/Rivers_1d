@@ -21,18 +21,15 @@ void Reach::compute_basic_coefficients() {
 
     std::shared_ptr<Section> fdSec = this->sections_ptr[0]; 
     fdSec->compute_hydraulic_basic();
-    
     for(size_t i = 1; i < this->nSec; i++){
 
         std::shared_ptr<Section> bdSec = this->sections_ptr[i]; 
         bdSec->compute_hydraulic_basic();
 
-        dx = bdSec->MIL - fdSec->MIL;
+        dx = fabs(bdSec->MIL - fdSec->MIL);
 
         sa = fabs(fdSec->u) * 9.81 * pow(fdSec->rSec[0], 2) * dx / (fdSec->r * 2 * this->dev_sita);//TODO using sec roughness
         sb = fabs(bdSec->u) * 9.81 * pow(bdSec->rSec[0], 2) * dx / (bdSec->r * 2 * this->dev_sita);
-
-        std::cout<<bdSec->u<<bdSec->rSec[0]<<bdSec->r<<std::endl;
 
         bc = (fdSec->b + bdSec->b) / 2;
         c = bc * dx / ( 2 * this->dt * this->dev_sita );
@@ -50,8 +47,7 @@ void Reach::compute_basic_coefficients() {
         this->G[i-1] = g;
         this->fai[i-1] = fai;
 
-        std::cout<<"i:"<<i<<" dx:"<<dx<<" sa:"<<sa<<" sb:"<<sb<<" bc:"<<bc<<" c:"<<c<<" d:"<<d<<" e:"<<e<<" f:"<<f<<" g:"<<g<<" fai:"<<fai<<std::endl;
-
+        // std::cout<<"i:"<<i<<" dx:"<<dx<<" sa:"<<sa<<" sb:"<<sb<<" bc:"<<bc<<" c:"<<c<<" d:"<<d<<" e:"<<e<<" f:"<<f<<" g:"<<g<<" fai:"<<fai<<std::endl;
         fdSec = bdSec;
     }
 }
@@ -59,9 +55,9 @@ void Reach::compute_basic_coefficients() {
 Reach::~Reach() {}
 
 OuterReach::OuterReach(size_t RV_ID, size_t RCH_ID, size_t nSec, size_t fdNodeID, size_t bdNodeID, 
-                    std::vector<std::shared_ptr<Section>> &sections_ptr, 
+                    std::vector<std::shared_ptr<Section>> &sections_ptr, double *TimeSer,
                         double dev_sita, double dt, size_t t, size_t reverse, size_t nodeType)
-    : Reach(RV_ID, RCH_ID, nSec, fdNodeID, bdNodeID, sections_ptr, dev_sita, dt, t), reverse(reverse), nodeType(nodeType) {
+    : Reach(RV_ID, RCH_ID, nSec, fdNodeID, bdNodeID, sections_ptr, dev_sita, dt, t), TimeSer(TimeSer), reverse(reverse), nodeType(nodeType) {
 
     this->P = new double[nSec];
     this->V = new double[nSec];
@@ -74,14 +70,14 @@ OuterReach::~OuterReach() {}
 void OuterReach::compute_outer_coefficients() {
     double c, d, e, f, g, fai;
     double y1, y2, y3, y4;
-    double s, t, p, v;
+    double s, t_, p, v;
 
     this->compute_basic_coefficients();
 
     if (this->nodeType == 1) {
-        this->P[0] = this->sections_ptr[0]->ZZ;
+        this->P[0] = this->TimeSer[this->t];
     }else{
-        this->P[0] = this->sections_ptr[0]->QQ;
+        this->P[0] = this->TimeSer[this->t];
     }
 
     this->V[0] = 0;
@@ -102,11 +98,11 @@ void OuterReach::compute_outer_coefficients() {
             y2 = fai + f * p;
             y3 = 1 + c * v;
             y4 = e + f * v;
-
+            
             s = (c * y2 - f * y1) / (f * y3 + c * y4);
-            t = (g * c - f) / (f * y3 + c * y4);
+            t_ = (g * c - f) / (f * y3 + c * y4);
             p = (y1 + y3 * s) / c;
-            v = (y3 * t + 1) / c;
+            v = (y3 * t_ + 1) / c;
         }else{
             y1 = c + v;
             y2 = f + e * v;
@@ -114,15 +110,16 @@ void OuterReach::compute_outer_coefficients() {
             y4 = fai - e * p;
 
             s = (g * y3 - y4)/(y1 * g + y2);
-            t = (g * c -f)/(y1 * g + y2);
+            t_ = (g * c -f)/(y1 * g + y2);
             p = (y3 - y1 * s);
-            v = (c - y1 * t);
+            v = (c - y1 * t_);
         }
 
         this->S[i] = s;
-        this->T[i] = t;
+        this->T[i] = t_;
         this->P[i] = p;
         this->V[i] = v;
+        std::cout<<"i:"<<i<<" "<<s<<" "<<t_<<" "<<p<<" "<<v<<std::endl;
     }
 
 }

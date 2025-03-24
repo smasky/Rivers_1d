@@ -20,9 +20,11 @@ class OutsideReach(Reach):
         super().__init__(ID, fdNodeInfos, bdNodeInfos)
         
         if bdNodeInfos[1] == bdNodeInfos[2]:
-            self.reverse = True
+            self.reverse = 1
         else:
-            self.reverse = False
+            self.reverse = 0
+        
+        
         
 class InnerReach(Reach): 
     

@@ -1,13 +1,12 @@
 '''
 Author: smasky
 Date: 2021-06-02 16:34:36
-LastEditTime: 2025-03-23 22:15:35
+LastEditTime: 2025-03-24 09:46:11
 LastEditors: smasky
 Description: python version for 1d-rivers computaion
-FilePath: \Rivers_1d-main\main.py
+FilePath: \River1d\main.py
 You will never know unless you try
 '''
-from pandas.core.arrays.sparse import dtype
 from Database_Tools import *
 from Reach_class import *
 from scipy.linalg import lu, solve

@@ -41,8 +41,10 @@ class OuterReach: public Reach{
 
         double *P, *V, *S, *T;
 
+        double *TimeSer;
+
         OuterReach(size_t RV_ID, size_t RCH_ID, size_t nSec, size_t fdNodeID, size_t bdNodeID, 
-                    std::vector<std::shared_ptr<Section>> &sections_ptr, 
+                    std::vector<std::shared_ptr<Section>> &sections_ptr, double *TimeSer, 
                         double dev_sita, double dt, size_t t, size_t reverse, size_t nodeType);
 
         void compute_outer_coefficients();

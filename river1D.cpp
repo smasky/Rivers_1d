@@ -11,8 +11,8 @@ namespace py = pybind11;
 std::shared_ptr<Section> createSection(size_t SEC_ID, size_t RCH_ID, size_t RV_ID, double MIL,
                             size_t nPoint, py::array_t<double> xSec_array, py::array_t<double> ySec_array, py::array_t<double> rSec_array,
                             size_t nT, py::array_t<double> Q_array, py::array_t<double> Z_array){
-    // 请求可写的缓冲区
-    py::buffer_info xSec_buf = xSec_array.request(true);  // true表示需要写权限
+
+    py::buffer_info xSec_buf = xSec_array.request(true); 
     py::buffer_info ySec_buf = ySec_array.request(true);
     py::buffer_info rSec_buf = rSec_array.request(true);
     py::buffer_info Q_buf = Q_array.request(true);
@@ -26,17 +26,17 @@ std::shared_ptr<Section> createSection(size_t SEC_ID, size_t RCH_ID, size_t RV_I
 
     auto section = std::make_shared<Section>(SEC_ID, RCH_ID, RV_ID, MIL, nPoint, xSec, ySec, rSec, nT, Q, Z);
     
-    // 保持对numpy数组的引用
-    section->keep_alive_arrays = {xSec_array, ySec_array, rSec_array, Q_array, Z_array};
-    
     return section;
 }
 
 std::shared_ptr<OuterReach> createOuterReach(size_t RV_ID, size_t RCH_ID, size_t nSec, size_t fdNodeID, size_t bdNodeID, 
-                     std::vector<std::shared_ptr<Section>> sections_ptr, 
+                     std::vector<std::shared_ptr<Section>> sections_ptr, py::array_t<double> TimeSer_array,
                         double dev_sita, double dt, size_t t, size_t reverse, size_t nodeType){
     
-    return std::make_shared<OuterReach>(RV_ID, RCH_ID, nSec, fdNodeID, bdNodeID, sections_ptr, dev_sita, dt, t, reverse, nodeType);
+    py::buffer_info TimeSer_buf = TimeSer_array.request(true);
+    double *TimeSer = static_cast<double*>(TimeSer_buf .ptr);
+
+    return std::make_shared<OuterReach>(RV_ID, RCH_ID, nSec, fdNodeID, bdNodeID, sections_ptr, TimeSer, dev_sita, dt, t, reverse, nodeType);
 }
 
 std::shared_ptr<InnerReach> createInnerReach(size_t RV_ID, size_t RCH_ID, size_t nSec, size_t fdNodeID, size_t bdNodeID, 
@@ -105,6 +105,18 @@ PYBIND11_MODULE(river1D, m) {
         })
         .def_property_readonly("fai", [](const OuterReach& self) {
             return py::array_t<double>(self.nSec, self.fai);
+        })
+        .def_property_readonly("P", [](const OuterReach& self) {
+            return py::array_t<double>(self.nSec, self.P);
+        })
+        .def_property_readonly("V", [](const OuterReach& self) {
+            return py::array_t<double>(self.nSec, self.V);
+        })
+        .def_property_readonly("S", [](const OuterReach& self) {
+            return py::array_t<double>(self.nSec, self.S);
+        })
+        .def_property_readonly("T", [](const OuterReach& self) {
+            return py::array_t<double>(self.nSec, self.T);
         });
 
     py::class_<InnerReach, std::shared_ptr<InnerReach>>(m, "InnerReach")

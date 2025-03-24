@@ -43,20 +43,26 @@ class Network():
                     bdMil = rch.bdNodeInfos[0]
                     
                     if mil >= fdMil and mil <= bdMil:
-                        break
+                        cSec = Section.createSection(secID, rchID, rvID, mil, sec.nPoint, sec.xSec, sec.ySec, sec.rSec, self.nt, sec.Q_Series, sec.Z_Series)
+                        rch.addSec(cSec)
                     
-                cSec = Section.createSection(secID, rchID, rvID, mil, sec.nPoint, sec.xSec, sec.ySec, sec.rSec, self.nt, sec.Q_Series, sec.Z_Series)
-                rch.addSec(cSec)
-                
             for rchID in rv.outRchIDs:
                 rch = rv.RCHs[rchID]
                 if rch.reverse == True:
                     rch.SECs.reverse()
-                a=0 #TODO
-                rch_ = OuterReach.createOuterReach(rvID, rchID, len(rch.SECs), rch.fdNodeInfos[1], rch.bdNodeInfos[1], 
-                                                   rch.SECs, self.dev_sita, self.dt, self.t, rch.reverse, a)
                 
-                rch_.compute_basic_coefficients()
+                #temp
+                if rch.fdNodeInfos[0] == 0.0:
+                    a = np.ascontiguousarray(np.ones(self.nt))*10
+                    T = rv.BDs[0].T
+                else:
+                    a = np.ascontiguousarray(np.ones(self.nt))
+                    T = rv.BDs[1].T
+                
+                rch_ = OuterReach.createOuterReach(rvID, rchID, len(rch.SECs), rch.fdNodeInfos[1], rch.bdNodeInfos[1], 
+                                                   rch.SECs, a, self.dev_sita, self.dt, self.t, rch.reverse, T)
+                
+                rch_.compute_outer_coefficients()
                 rv.RCHs_[rchID] = rch_
             
             for rchID in rv.inRchIDs:
@@ -211,8 +217,8 @@ class Network():
         nt = self.nt
         
         for _, sec in rv.SECs.items():
-            sec.Q_Series = np.ones(nt) * self.Q_init
-            sec.Z_Series = np.ones(nt) * self.Z_init
+            sec.Q_Series = np.ascontiguousarray(np.ones(nt) * self.Q_init)
+            sec.Z_Series = np.ascontiguousarray(np.ones(nt) * self.Z_init)
         
         # for I, bd in rv.BDs.items():
         #     T = bd.T
