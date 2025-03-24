@@ -1,10 +1,10 @@
 '''
 Author: smasky
 Date: 2021-06-16 21:43:52
-LastEditTime: 2021-06-17 22:14:52
+LastEditTime: 2025-03-22 13:08:13
 LastEditors: smasky
 Description: python versions for 1d_rivers 
-FilePath: \Rivers_1d\Reach_class.py
+FilePath: \Rivers_1d-main\Reach_class.py
 You will never know unless you try
 '''
 import numpy as np
@@ -17,7 +17,7 @@ class reach():
         self.reach_ID=reach_ID
         self.num_sec=info_sec['num_sec']
         self.DT=DT
-        self.sita0=sita
+        self.sita0=sita 
         self.ID=ID
         self.info_sec=info_sec
         self.roughness=roughness
@@ -26,6 +26,7 @@ class reach():
         self.order_mileages=info_sec['order_mileages']
         self.Q=info_sec['Q']
         self.Z=info_sec['Z']
+
         self.C=np.zeros(num_sec)
         self.D=np.zeros(num_sec)
         self.E=np.zeros(num_sec)
@@ -132,6 +133,18 @@ class out_reach(reach):
         '''
         更新迭代系数
         '''
+        
+        # if not self.resverse:
+        #     if self.type_node==0:
+        #         self.Q[0] = self.time_series[t, 1]
+        #     else:
+        #         self.Z[0] = self.time_series[t, 1]
+        # else:
+        #     if self.type_node==0:
+        #         self.Q[-1] = self.time_series[t, 1]
+        #     else:
+        #         self.Z[-1] = self.time_series[t, 1]
+                
         self.update_basic()
         P=self.P;V=self.V;S=self.S;T=self.T;C=self.C;D=self.D;E=self.E;F=self.F;G=self.G;fai=self.fai
 

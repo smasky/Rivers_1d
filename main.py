@@ -1,10 +1,10 @@
 '''
 Author: smasky
 Date: 2021-06-02 16:34:36
-LastEditTime: 2025-03-20 09:34:34
+LastEditTime: 2025-03-23 22:15:35
 LastEditors: smasky
 Description: python version for 1d-rivers computaion
-FilePath: \River1d\main.py
+FilePath: \Rivers_1d-main\main.py
 You will never know unless you try
 '''
 from pandas.core.arrays.sparse import dtype
@@ -15,13 +15,13 @@ import time
 from scipy import interpolate
 # setting
 aaa = time.time()
-In_Q = 0
-In_Z = 3.2
+In_Q = 5.0
+In_Z = 2.0
 path = 'test6.db'
 # reload_database(path)
 conn=link_database(path)
 #conn=create_project(path,"setting.txt","rivers.txt","nodes.txt","sections.txt","boundary.txt")
-DT=100
+DT=1
 Time=DT*1000
 
 assert type(Time%DT==0)

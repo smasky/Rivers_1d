@@ -1,18 +1,18 @@
 /*
  * @Author: smasky
  * @Date: 2021-06-16 21:43:52
- * @LastEditTime: 2021-06-18 15:00:21
+ * @LastEditTime: 2025-03-22 13:03:39
  * @LastEditors: smasky
- * @Description: reaches class(Reach,OuterReach,InnerReach)
- * @FilePath: \cytest\reaches.cpp
+ * @Description: reaches class(Reach, OuterReach, InnerReach)
+ * @FilePath: \Rivers_1d-main\reaches.cpp
  * You will never know unless you try
  */
 #include "reaches.h"
 #include <iostream>
 
 Reach::Reach(int river_id, int reach_id,int num_sec,int dt,double dev_sita,double roughness,int *section_id,
-		double *sec_x,double *sec_y,int length_sec_xy,int *points_sec, double *mileage, double *Q, double *Z):m_river_id(river_id),
-		m_reach_id(reach_id),m_num_sec(num_sec),m_dt(dt),m_dev_sita(dev_sita),m_roughness(roughness){
+		double *sec_x, double *sec_y, int length_sec_xy, int *points_sec, double *mileage, double *Q, double *Z):m_river_id(river_id),
+		m_reach_id(reach_id), m_num_sec(num_sec), m_dt(dt), m_dev_sita(dev_sita), m_roughness(roughness){
 			m_Q= new double[m_num_sec];
 			memcpy(m_Q,Q,m_num_sec*sizeof(double));
 			m_Z= new double[m_num_sec];

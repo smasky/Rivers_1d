@@ -1,10 +1,10 @@
 /*
  * @Author: smasky
  * @Date: 2021-06-16 21:43:52
- * @LastEditTime: 2021-06-18 14:49:49
+ * @LastEditTime: 2025-03-22 15:49:03
  * @LastEditors: smasky
  * @Description: reaches class(Reach,OuterReach,InnerReach)
- * @FilePath: \cytest\reaches.h
+ * @FilePath: \Rivers_1d-main\old\reaches.h
  * You will never know unless you try
  */
 
@@ -19,20 +19,20 @@ class Reach
 	protected:
 		
 		int m_dt;// computaion time step
-		double m_dev_sita,m_roughness; //difference coefficient
+		double m_dev_sita, m_roughness; //difference coefficient
 		// section id in current reach
-		double **m_begin_sec_x,**m_begin_sec_y;
-		double *m_sec_x,*m_sec_y;
+		double **m_begin_sec_x, **m_begin_sec_y;
+		double *m_sec_x, *m_sec_y;
 		int *m_points_sec;
 		double *m_mileage; //section mileages array
-		double *m_Q,*m_Z; //Q:Discharge array;Z:Water array
-		double *m_C,*m_D,*m_E,*m_F,*m_G,*m_fai; //used coefficients array
+		double *m_Q, *m_Z; //Q:Discharge array; Z:Water array
+		double *m_C, *m_D, *m_E, *m_F, *m_G, *m_fai; //used coefficients array
 	public: //result interface for python
-		int m_river_id,m_reach_id,m_num_sec;// basic information
+		int m_river_id ,m_reach_id, m_num_sec;// basic information
 		int *m_section_id;
 		
-		Reach(int river_id,int reach_id,int num_sec, int dt, double dev_sita, double roughness,int *section_id, 
-		double *sec_x,double *sec_y,int length_sec_xy,int *points_sec, double *mileage, double *Q, double *Z);
+		Reach(int river_id, int reach_id, int num_sec, int dt, double dev_sita, double roughness,int *section_id, 
+		double *sec_x, double *sec_y,int length_sec_xy,int *points_sec, double *mileage, double *Q, double *Z);
 		~Reach(); 
 		
 		void compute_basic_cofficients();
@@ -62,12 +62,6 @@ class OuterReach:public Reach
 		void return_node_coes(int *m_end_node, double *coe_item, double *const_item);
 		void recompute_Q_Z(double *all_Z); 
 		~OuterReach();
-		
-
-		
-		
-		
-
 };
 
 class InnerReach:public Reach

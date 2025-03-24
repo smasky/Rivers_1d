@@ -1,11 +1,33 @@
+from config import DT
+
 class Reach():
     
-    def __init__(self, ID, fdMi, bdMi, fdNode = None, bdNode = None):
+    def __init__(self, ID, fdNodeInfos, bdNodeInfos):
         
         self.ID = ID
-        self.fdMi = fdMi
-        self.bdMi = bdMi
-        self.fdNode = fdNode
-        self.bdNode = bdNode
+        self.fdNodeInfos = fdNodeInfos
+        self.bdNodeInfos = bdNodeInfos
         
-        self.secID = []
+        self.SECs = []
+    
+    def addSec(self, sec):
+        self.SECs.append(sec)
+
+class OutsideReach(Reach):
+    
+    def __init__(self, ID, fdNodeInfos, bdNodeInfos):
+        
+        super().__init__(ID, fdNodeInfos, bdNodeInfos)
+        
+        if bdNodeInfos[1] == bdNodeInfos[2]:
+            self.reverse = True
+        else:
+            self.reverse = False
+        
+class InnerReach(Reach): 
+    
+    def __init__(self, ID, fdNodeInfos, bdNodeInfos):
+        
+        super().__init__(ID, fdNodeInfos, bdNodeInfos)
+        
+    

@@ -4,9 +4,15 @@ class Node():
         self.ID = ID
         self.reaches = []
         self.nRch = 0
+        self.neighborID = []
         
-    def addRch(self, rvID, rchID):
-        self.reaches.append( (rvID, rchID) )
+    def addRch(self, rvID, rchID, direction):
+        '''
+        rvID: river ID
+        rchID: reach ID
+        direction: 0 for upstream, 1 for downstream
+        '''
+        self.reaches.append( (rvID, rchID, direction) )
         self.nRch +=1
 class InnerNode(Node):
     def __init__(self, ID):
