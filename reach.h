@@ -1,7 +1,7 @@
 #include "section.h"
 #include <vector>
 #include <memory>
-
+#include <tuple>
 class Reach{
     
     public:
@@ -32,12 +32,8 @@ class Reach{
 class OuterReach: public Reach{
 
     public:
-        size_t fdNodeID;
-        size_t bdNodeID;
         size_t reverse;
         size_t nodeType;
-        size_t t;
-        
 
         double *P, *V, *S, *T;
 
@@ -48,7 +44,7 @@ class OuterReach: public Reach{
                         double dev_sita, double dt, size_t t, size_t reverse, size_t nodeType);
 
         void compute_outer_coefficients();
-
+        std::tuple<size_t, double, double> get_node_coe();
         void recompute_QZ();
 
         ~OuterReach();
@@ -68,7 +64,8 @@ class InnerReach: public Reach{
                         double dev_sita, double dt, size_t t);
 
         void compute_inner_coefficients();
-
+        std::tuple<size_t, size_t, double, double, double> get_fd_coe();
+        std::tuple<size_t, size_t, double, double, double> get_bd_coe();
         void recompute_QZ();
 
         ~InnerReach();

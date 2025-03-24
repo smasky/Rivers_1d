@@ -3,7 +3,7 @@ import numpy as np
 
 from river import River
 from river1D import Section, OuterReach, InnerReach
-
+from scipy.linalg import solve, lu
 class Network():
     def __init__(self, riverPath, nodePath, sectionPath, boundaryPath):
         
@@ -29,11 +29,12 @@ class Network():
     
     def simPressimann(self):
         
+        a =  np.ascontiguousarray(np.ones(self.nt))*10
+        
+        b =  np.ascontiguousarray(np.ones(self.nt))
+        
         for rvID, rv in self.RVs.items():
-            # std::shared_ptr<Section> createSection(size_t SEC_ID, size_t RCH_ID, size_t RV_ID, double MIL,
-            #                 size_t nPoint, py::array_t<double> xSec_array, py::array_t<double> ySec_array, py::array_t<double> rSec_array,
-            #                 size_t nT, py::array_t<double> Q_array, py::array_t<double> Z_array)
-            #extend time series for sections
+            
             self.extendTimeSeries(rv)
             
             for secID, sec in rv.SECs.items():
@@ -53,32 +54,51 @@ class Network():
                 
                 #temp
                 if rch.fdNodeInfos[0] == 0.0:
-                    a = np.ascontiguousarray(np.ones(self.nt))*10
+                    c = a
                     T = rv.BDs[0].T
                 else:
-                    a = np.ascontiguousarray(np.ones(self.nt))
+                    c = b
                     T = rv.BDs[1].T
                 
                 rch_ = OuterReach.createOuterReach(rvID, rchID, len(rch.SECs), rch.fdNodeInfos[1], rch.bdNodeInfos[1], 
-                                                   rch.SECs, a, self.dev_sita, self.dt, self.t, rch.reverse, T)
-                
-                rch_.compute_outer_coefficients()
+                                                   rch.SECs, c, self.dev_sita, self.dt, self.t, rch.reverse, T)
                 rv.RCHs_[rchID] = rch_
-            
+
             for rchID in rv.inRchIDs:
+                
                 rch = rv.RCHs[rchID]
                 
                 rch_ = InnerReach.createInnerReach(rvID, rchID, len(rch.SECs), rch.fdNodeInfos[1], rch.bdNodeInfos[1], rch.SECs, self.dev_sita, self.dt, self.t)
-                
-                rv.RCHs_[rchID] = rch_
-                
-            # std::shared_ptr<InnerReach> createInnerReach(size_t RV_ID, size_t RCH_ID, size_t nSec, size_t fdNodeID, size_t bdNodeID, 
-            #         std::vector<Section*> &sections_ptr, 
-            #             double dev_sita, double dt, size_t t)
-
+                rv.RCHs_[rchID] = rch_            
+        
+        B = np.zeros((self.nInNode, 1))
+        A = np.zeros((self.nInNode, self.nInNode))
+        for rvID, rv in self.RVs.items():
             
+            for rchID in rv.outRchIDs:
+                rch = rv.RCHs_[rchID]
+                rch.compute_outer_coefficients()
+                nodeID, coe_z, const_z = rch.get_node_coe()
+                B[nodeID-1, 0] += const_z
+                A[nodeID-1, nodeID-1] += coe_z
             
-              
+            for rchID in rv.inRchIDs:
+                rch = rv.RCHs_[rchID]
+                rch.compute_inner_coefficients()
+                fdID, bdID, alpha, beta, zeta = rch.get_fd_coe()
+                bdID, fdID, sita, eta, gama = rch.get_bd_coe()
+                
+                B[fdID-1, 0] += alpha
+                A[fdID-1, fdID-1] += beta
+                A[fdID-1, bdID-1] += zeta
+                
+                B[bdID-1, 0] += sita
+                A[bdID-1, bdID-1] += eta
+                A[bdID-1, fdID-1] += gama
+        p, l, u = lu(A)
+        y = solve(p.dot(l), B)
+        Z = solve(u, y)
+        print(Z)
     def readRiverInfo(self, path):
         
         ID_RV = 0

@@ -4,7 +4,7 @@
 Reach::Reach(size_t RV_ID, size_t RCH_ID, size_t nSec, 
                 size_t fdNodeID, size_t bdNodeID, 
                 std::vector<std::shared_ptr<Section>> &sections_ptr, double dev_sita, double dt, size_t t)
-    : RV_ID(RV_ID), RCH_ID(RCH_ID), nSec(nSec), fdNodeID(fdNodeID), bdNodeID(bdNodeID), sections_ptr(sections_ptr), dev_sita(dev_sita), dt(dt), t(t) {
+    : RV_ID(RV_ID), RCH_ID(RCH_ID), nSec(nSec), sections_ptr(sections_ptr),fdNodeID(fdNodeID), bdNodeID(bdNodeID), dev_sita(dev_sita), dt(dt), t(t) {
 
         C = new double[nSec];
         D = new double[nSec];
@@ -19,8 +19,10 @@ void Reach::compute_basic_coefficients() {
     double sa, sb, bc;
     double c, d, e, g, f, fai;
 
-    std::shared_ptr<Section> fdSec = this->sections_ptr[0]; 
+    std::shared_ptr<Section> fdSec = this->sections_ptr[0];
+
     fdSec->compute_hydraulic_basic();
+
     for(size_t i = 1; i < this->nSec; i++){
 
         std::shared_ptr<Section> bdSec = this->sections_ptr[i]; 
@@ -47,9 +49,9 @@ void Reach::compute_basic_coefficients() {
         this->G[i-1] = g;
         this->fai[i-1] = fai;
 
-        // std::cout<<"i:"<<i<<" dx:"<<dx<<" sa:"<<sa<<" sb:"<<sb<<" bc:"<<bc<<" c:"<<c<<" d:"<<d<<" e:"<<e<<" f:"<<f<<" g:"<<g<<" fai:"<<fai<<std::endl;
         fdSec = bdSec;
     }
+    
 }
 
 Reach::~Reach() {}
@@ -63,6 +65,27 @@ OuterReach::OuterReach(size_t RV_ID, size_t RCH_ID, size_t nSec, size_t fdNodeID
     this->V = new double[nSec];
     this->S = new double[nSec];
     this->T = new double[nSec];
+}
+
+std::tuple<size_t, double, double> OuterReach::get_node_coe(){
+    double coe_z, const_z;
+    size_t nodeID;
+
+    if (this->nodeType == 1){
+        coe_z = -1/this->V[this->nSec-1];
+        const_z = -this->P[this->nSec-1]/this->V[this->nSec-1];
+    }else{
+        coe_z = -this->V[this->nSec-1];
+        const_z = -this->P[this->nSec-1];
+    }
+
+    if (this->reverse == 1){
+        nodeID = this->fdNodeID;
+    }else{
+        nodeID = this->bdNodeID;
+    }
+   
+    return std::make_tuple(nodeID, coe_z, const_z);
 }
 
 OuterReach::~OuterReach() {}
@@ -79,12 +102,12 @@ void OuterReach::compute_outer_coefficients() {
     }else{
         this->P[0] = this->TimeSer[this->t];
     }
-
+    
     this->V[0] = 0;
 
     p = this->P[0];
     v = this->V[0];
-
+    
     for(size_t i = 1; i < this->nSec; i++){
         c = this->C[i-1];
         d = this->D[i-1];
@@ -119,7 +142,6 @@ void OuterReach::compute_outer_coefficients() {
         this->T[i] = t_;
         this->P[i] = p;
         this->V[i] = v;
-        std::cout<<"i:"<<i<<" "<<s<<" "<<t_<<" "<<p<<" "<<v<<std::endl;
     }
 
 }
@@ -198,7 +220,8 @@ void InnerReach::compute_inner_coefficients() {
     this->Beta[this->nSec-2] = beta;
     this->Zeta[this->nSec-2] = zeta;
 
-    for(size_t i = this->nSec-3; i > -1; i--){
+    for(int i = this->nSec-3; i > -1; i--){
+        
         c = this->C[i]; d = this->D[i]; e = this->E[i]; f = this->F[i]; g = this->G[i]; fai = this->fai[i];
 
         y1 = c + beta;
@@ -217,24 +240,26 @@ void InnerReach::compute_inner_coefficients() {
     sita = (e * d + fai) / (e + g); eta = - (c * e + f) / (e + g); gama = (f - c * e) / (e + g);
 
     this->Sita[1] = sita; this->Eta[1] = eta; this->Gama[1] = gama;
-    for (size_t i = 2; i < this->nSec; i++){
+
+    for (int i = 2; i < this->nSec; i++){
+        
         c = this->C[i-1]; d = this->D[i-1]; e = this->E[i-1]; f = this->F[i-1]; g = this->G[i-1]; fai = this->fai[i-1];
 
         y1 = c - eta;
         y2 = e * eta - f;
 
-        sita = (y2 * (d + sita)) - y1 * (fai - e * sita) / (y2 - g * y1);
+        sita = (y2 * (d + sita) - y1 * (fai - e * sita)) / (y2 - g * y1);
         eta =  (f * y1 - c * y2) / (y2 - g * y1);
         gama = gama * (y2 + e * y1) / (y2 - g * y1);
-
+        
         this->Sita[i] = sita; this->Eta[i] = eta; this->Gama[i] = gama;
     }
 
     this->alpha = this->Alpha[0];
-    this->beta = this->Beta[0];
-    this->zeta = this->Zeta[0];
+    this->beta = -1 * this->Beta[0];
+    this->zeta = -1 * this->Zeta[0];
 
-    this->sita = this->Sita[this->nSec-1];
+    this->sita = -1 * this->Sita[this->nSec-1];
     this->eta = this->Eta[this->nSec-1];
     this->gama = this->Gama[this->nSec-1];
 }
@@ -261,6 +286,14 @@ void InnerReach::recompute_QZ() {
         this->sections_ptr[i]->Z[this->t] = this->sections_ptr[i]->ZZ;
     }
 
+}
+
+std::tuple<size_t, size_t, double, double, double> InnerReach::get_fd_coe(){
+    return std::make_tuple(this->fdNodeID, this->bdNodeID, this->alpha, this->beta, this->zeta);
+}
+
+std::tuple<size_t, size_t, double, double, double> InnerReach::get_bd_coe(){
+    return std::make_tuple(this->bdNodeID, this->fdNodeID, this->sita, this->eta, this->gama);
 }
 
 InnerReach::~InnerReach() {}

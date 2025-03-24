@@ -35,7 +35,7 @@ std::shared_ptr<OuterReach> createOuterReach(size_t RV_ID, size_t RCH_ID, size_t
     
     py::buffer_info TimeSer_buf = TimeSer_array.request(true);
     double *TimeSer = static_cast<double*>(TimeSer_buf .ptr);
-
+    
     return std::make_shared<OuterReach>(RV_ID, RCH_ID, nSec, fdNodeID, bdNodeID, sections_ptr, TimeSer, dev_sita, dt, t, reverse, nodeType);
 }
 
@@ -88,6 +88,13 @@ PYBIND11_MODULE(river1D, m) {
         .def("compute_outer_coefficients", &OuterReach::compute_outer_coefficients)
         .def("compute_basic_coefficients", &OuterReach::compute_basic_coefficients)
         .def("recompute_QZ", &OuterReach::recompute_QZ)
+        .def("get_node_coe", &OuterReach::get_node_coe)
+        .def_property("fdNodeID", 
+            [](const OuterReach& self) { return self.fdNodeID; },  // getter
+            [](OuterReach& self, size_t value) { self.fdNodeID = value; })
+        .def_property("bdNodeID", 
+            [](const OuterReach& self) { return self.bdNodeID; },  // getter
+            [](OuterReach& self, size_t value) { self.bdNodeID = value; })
         .def_property_readonly("C", [](const OuterReach& self) {
             return py::array_t<double>(self.nSec, self.C);
         })
@@ -117,11 +124,35 @@ PYBIND11_MODULE(river1D, m) {
         })
         .def_property_readonly("T", [](const OuterReach& self) {
             return py::array_t<double>(self.nSec, self.T);
+        })
+        .def_property_readonly("TimeSer", [](const OuterReach& self) {
+            return py::array_t<double>(2000, self.TimeSer);
         });
 
     py::class_<InnerReach, std::shared_ptr<InnerReach>>(m, "InnerReach")
         .def_static("createInnerReach", &createInnerReach, "Create a new InnerReach object",
-                   py::return_value_policy::take_ownership);
+                   py::return_value_policy::take_ownership)
+        .def("compute_inner_coefficients", &InnerReach::compute_inner_coefficients)
+        .def("get_fd_coe", &InnerReach::get_fd_coe)
+        .def("get_bd_coe", &InnerReach::get_bd_coe)
+        .def_property_readonly("Alpha   ", [](const InnerReach& self) {
+            return py::array_t<double>(self.nSec, self.Alpha);
+        })
+        .def_property_readonly("Beta", [](const InnerReach& self) {
+            return py::array_t<double>(self.nSec, self.Beta);
+        })
+        .def_property_readonly("Zeta", [](const InnerReach& self) {
+            return py::array_t<double>(self.nSec, self.Zeta);
+        })
+        .def_property_readonly("Sita", [](const InnerReach& self) {
+            return py::array_t<double>(self.nSec, self.Sita);
+        })
+        .def_property_readonly("Eta", [](const InnerReach& self) {
+            return py::array_t<double>(self.nSec, self.Eta);
+        })
+        .def_property_readonly("Gama", [](const InnerReach& self) {
+            return py::array_t<double>(self.nSec, self.Gama);
+        }) ;
 }
 
 
