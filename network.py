@@ -15,9 +15,9 @@ class Network():
         
         self.t = 1
         self.nt = 2000
-        self.dt = 1.0
+        self.dt = 100.0
         self.dev_sita = 0.75
-        self.Q_init = 5.0
+        self.Q_init = 10.0
         self.Z_init = 2.0
         
         self.readRiverInfo(riverPath)
@@ -71,34 +71,58 @@ class Network():
                 rch_ = InnerReach.createInnerReach(rvID, rchID, len(rch.SECs), rch.fdNodeInfos[1], rch.bdNodeInfos[1], rch.SECs, self.dev_sita, self.dt, self.t)
                 rv.RCHs_[rchID] = rch_            
         
-        B = np.zeros((self.nInNode, 1))
-        A = np.zeros((self.nInNode, self.nInNode))
-        for rvID, rv in self.RVs.items():
+        
+        #Simulation
+        i = 0
+        while i < 100:
             
-            for rchID in rv.outRchIDs:
-                rch = rv.RCHs_[rchID]
-                rch.compute_outer_coefficients()
-                nodeID, coe_z, const_z = rch.get_node_coe()
-                B[nodeID-1, 0] += const_z
-                A[nodeID-1, nodeID-1] += coe_z
+            i += 1
+            print(i)
             
-            for rchID in rv.inRchIDs:
-                rch = rv.RCHs_[rchID]
-                rch.compute_inner_coefficients()
-                fdID, bdID, alpha, beta, zeta = rch.get_fd_coe()
-                bdID, fdID, sita, eta, gama = rch.get_bd_coe()
+            B = np.zeros((self.nInNode, 1))
+            A = np.zeros((self.nInNode, self.nInNode))
+            
+            for rvID, rv in self.RVs.items():
                 
-                B[fdID-1, 0] += alpha
-                A[fdID-1, fdID-1] += beta
-                A[fdID-1, bdID-1] += zeta
+                for rchID in rv.outRchIDs:
+                    rch = rv.RCHs_[rchID]
+                    rch.compute_outer_coefficients()
+                    nodeID, coe_z, const_z = rch.get_node_coe()
+                    B[nodeID-1, 0] += const_z
+                    A[nodeID-1, nodeID-1] += coe_z
                 
-                B[bdID-1, 0] += sita
-                A[bdID-1, bdID-1] += eta
-                A[bdID-1, fdID-1] += gama
-        p, l, u = lu(A)
-        y = solve(p.dot(l), B)
-        Z = solve(u, y)
-        print(Z)
+                for rchID in rv.inRchIDs:
+                    rch = rv.RCHs_[rchID]
+                    rch.compute_inner_coefficients()
+                    fdID, bdID, alpha, beta, zeta = rch.get_fd_coe()
+                    bdID, fdID, sita, eta, gama = rch.get_bd_coe()
+                    
+                    B[fdID-1, 0] += alpha
+                    A[fdID-1, fdID-1] += beta
+                    A[fdID-1, bdID-1] += zeta
+                    
+                    B[bdID-1, 0] += sita
+                    A[bdID-1, bdID-1] += eta
+                    A[bdID-1, fdID-1] += gama
+            p, l, u = lu(A)
+            y = solve(p.dot(l), B)
+            Z = solve(u, y)
+            
+            for rvID, rv in self.RVs.items():
+                for rchID in rv.outRchIDs:
+                    rch = rv.RCHs_[rchID]
+                    rch.recompute_QZ(Z[rch.innerNodeID-1, 0])
+                
+                for rchID in rv.inRchIDs:
+                    rch = rv.RCHs_[rchID]
+                    rch.recompute_QZ(Z[rch.fdNodeID-1, 0], Z[rch.bdNodeID-1, 0])
+            
+            for rvID, rv in self.RVs.items():
+                for rchID, rch in rv.RCHs_.items():
+                    rch.update_t()
+            
+            print(Z) 
+                
     def readRiverInfo(self, path):
         
         ID_RV = 0

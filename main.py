@@ -1,7 +1,7 @@
 '''
 Author: smasky
 Date: 2021-06-02 16:34:36
-LastEditTime: 2025-03-24 09:46:11
+LastEditTime: 2025-03-25 10:47:50
 LastEditors: smasky
 Description: python version for 1d-rivers computaion
 FilePath: \River1d\main.py
@@ -20,7 +20,7 @@ path = 'test6.db'
 # reload_database(path)
 conn=link_database(path)
 #conn=create_project(path,"setting.txt","rivers.txt","nodes.txt","sections.txt","boundary.txt")
-DT=1
+DT=10
 Time=DT*1000
 
 assert type(Time%DT==0)
@@ -164,7 +164,7 @@ for t in range(100):
     result.to_csv('temp.csv')
 '''
 
-for t in range(300):
+for t in range(100):
     Nodes_matrix=np.zeros((N_I,N_I),dtype=float)
     B=np.zeros((N_I,1))
 

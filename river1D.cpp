@@ -89,6 +89,7 @@ PYBIND11_MODULE(river1D, m) {
         .def("compute_basic_coefficients", &OuterReach::compute_basic_coefficients)
         .def("recompute_QZ", &OuterReach::recompute_QZ)
         .def("get_node_coe", &OuterReach::get_node_coe)
+        .def("update_t", &OuterReach::update_t)
         .def_property("fdNodeID", 
             [](const OuterReach& self) { return self.fdNodeID; },  // getter
             [](OuterReach& self, size_t value) { self.fdNodeID = value; })
@@ -127,6 +128,15 @@ PYBIND11_MODULE(river1D, m) {
         })
         .def_property_readonly("TimeSer", [](const OuterReach& self) {
             return py::array_t<double>(2000, self.TimeSer);
+        })
+        .def_property_readonly("reverse", [](const OuterReach& self) {
+            return self.reverse;
+        })
+        .def_property_readonly("nodeType", [](const OuterReach& self) {
+            return self.nodeType;
+        })
+        .def_property_readonly("innerNodeID", [](const OuterReach& self) {
+            return self.innerNodeID;
         });
 
     py::class_<InnerReach, std::shared_ptr<InnerReach>>(m, "InnerReach")
@@ -135,6 +145,8 @@ PYBIND11_MODULE(river1D, m) {
         .def("compute_inner_coefficients", &InnerReach::compute_inner_coefficients)
         .def("get_fd_coe", &InnerReach::get_fd_coe)
         .def("get_bd_coe", &InnerReach::get_bd_coe)
+        .def("recompute_QZ", &InnerReach::recompute_QZ)
+        .def("update_t", &InnerReach::update_t)
         .def_property_readonly("Alpha   ", [](const InnerReach& self) {
             return py::array_t<double>(self.nSec, self.Alpha);
         })
@@ -152,7 +164,13 @@ PYBIND11_MODULE(river1D, m) {
         })
         .def_property_readonly("Gama", [](const InnerReach& self) {
             return py::array_t<double>(self.nSec, self.Gama);
-        }) ;
+        })
+        .def_property_readonly("fdNodeID", [](const InnerReach& self) {
+            return self.fdNodeID;
+        })
+        .def_property_readonly("bdNodeID", [](const InnerReach& self) {
+            return self.bdNodeID;
+        });
 }
 
 

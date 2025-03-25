@@ -24,12 +24,8 @@ class OutsideReach(Reach):
         else:
             self.reverse = 0
         
-        
-        
 class InnerReach(Reach): 
     
     def __init__(self, ID, fdNodeInfos, bdNodeInfos):
         
         super().__init__(ID, fdNodeInfos, bdNodeInfos)
-        
-    

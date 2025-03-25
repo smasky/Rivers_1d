@@ -23,6 +23,8 @@ class Reach{
                     std::vector<std::shared_ptr<Section>> &sections_ptr, 
                         double dev_sita, double dt, size_t t);
 
+        void update_t();
+        
         void compute_basic_coefficients();
 
         ~Reach();
@@ -34,6 +36,7 @@ class OuterReach: public Reach{
     public:
         size_t reverse;
         size_t nodeType;
+        size_t innerNodeID;
 
         double *P, *V, *S, *T;
 
@@ -45,7 +48,7 @@ class OuterReach: public Reach{
 
         void compute_outer_coefficients();
         std::tuple<size_t, double, double> get_node_coe();
-        void recompute_QZ();
+        void recompute_QZ(double z_compute);
 
         ~OuterReach();
 };
@@ -66,7 +69,7 @@ class InnerReach: public Reach{
         void compute_inner_coefficients();
         std::tuple<size_t, size_t, double, double, double> get_fd_coe();
         std::tuple<size_t, size_t, double, double, double> get_bd_coe();
-        void recompute_QZ();
+        void recompute_QZ(double fd_z_compute, double bd_z_compute);
 
         ~InnerReach();
 };

@@ -54,6 +54,10 @@ void Reach::compute_basic_coefficients() {
     
 }
 
+void Reach::update_t() {
+    this->t++;
+}
+
 Reach::~Reach() {}
 
 OuterReach::OuterReach(size_t RV_ID, size_t RCH_ID, size_t nSec, size_t fdNodeID, size_t bdNodeID, 
@@ -65,6 +69,13 @@ OuterReach::OuterReach(size_t RV_ID, size_t RCH_ID, size_t nSec, size_t fdNodeID
     this->V = new double[nSec];
     this->S = new double[nSec];
     this->T = new double[nSec];
+
+    if(this->reverse == 0){
+        this->innerNodeID = this->bdNodeID;
+    }else{
+        this->innerNodeID = this->fdNodeID;
+    }
+
 }
 
 std::tuple<size_t, double, double> OuterReach::get_node_coe(){
@@ -146,13 +157,20 @@ void OuterReach::compute_outer_coefficients() {
 
 }
 
-void OuterReach::recompute_QZ() {
+void OuterReach::recompute_QZ(double z_compute) {
     double q, z;
 
-    //TODO：check right  Z[self.num_sec-1]=Zb 
+    // if(this->reverse == 0){
+    //     this->sections_ptr[this->nSec-1]->ZZ = z_compute;
+    // }else{
+    //     this->sections_ptr[0]->ZZ = z_compute;
+    // }
+    
+    this->sections_ptr[this->nSec-1]->ZZ = z_compute;
+
     if(this->nodeType == 1){
         //Water level node
-        q = this->P[this->nSec-1] / this->V[this->nSec-1] - this->sections_ptr[0]->ZZ / this->V[this->nSec-1];
+        q = this->P[this->nSec-1] / this->V[this->nSec-1] - this->sections_ptr[this->nSec-1]->ZZ / this->V[this->nSec-1];
         this->sections_ptr[this->nSec-1]->QQ = q;
     }else{
         //Discharge node
@@ -160,7 +178,7 @@ void OuterReach::recompute_QZ() {
         this->sections_ptr[this->nSec-1]->QQ = this->P[this->nSec-1] - z * this->V[this->nSec-1];
     }
 
-    for(size_t i = this->nSec - 2; i > -1; i--){
+    for(int i = this->nSec - 2; i > -1; i--){
 
         if(this->nodeType == 1){
             q = this->S[i+1] - this->T[i+1] * q;
@@ -171,8 +189,14 @@ void OuterReach::recompute_QZ() {
         }
 
         this->sections_ptr[i]->QQ = q;
-        this->sections_ptr[i]->ZZ = z;  
+        this->sections_ptr[i]->ZZ = z;
+
+        // std::cout<<this->sections_ptr[i]->SEC_ID<<" "<<this->sections_ptr[i]->QQ<<" "<<this->sections_ptr[i]->ZZ<<std::endl;
     }
+
+    // for(size_t i = 0; i < this->nSec; i++){
+    //     std::cout<<this->sections_ptr[i]->SEC_ID<<" "<<this->sections_ptr[i]->QQ<<" "<<this->sections_ptr[i]->ZZ<<std::endl;
+    // }
 
     if(this->reverse == 1){
         //TODO:check right
@@ -186,6 +210,7 @@ void OuterReach::recompute_QZ() {
             this->sections_ptr[i]->Z[this->t] = this->sections_ptr[i]->ZZ;
         }
     }
+    
 }
 
 
@@ -264,9 +289,12 @@ void InnerReach::compute_inner_coefficients() {
     this->gama = this->Gama[this->nSec-1];
 }
 
-void InnerReach::recompute_QZ() {
+void InnerReach::recompute_QZ(double fd_z_compute, double bd_z_compute) {
     double q, z, za, zb;
 
+    this->sections_ptr[0]->ZZ = fd_z_compute;
+    this->sections_ptr[this->nSec-1]->ZZ = bd_z_compute;
+    
     za = this->sections_ptr[0]->ZZ;
     zb = this->sections_ptr[this->nSec-1]->ZZ;
 
@@ -276,10 +304,15 @@ void InnerReach::recompute_QZ() {
 
         this->sections_ptr[i]->QQ = q;
         this->sections_ptr[i]->ZZ = z;
+        // std::cout<<this->sections_ptr[i]->SEC_ID<<" "<<this->sections_ptr[i]->QQ<<" "<<this->sections_ptr[i]->ZZ<<std::endl;
     }
 
     this->sections_ptr[0]->QQ = this->Alpha[0] + this->Beta[0] * za + this->Zeta[0] * zb;
     this->sections_ptr[this->nSec-1]->QQ = this->Sita[this->nSec-1] + this->Eta[this->nSec-1]*zb + this->Gama[this->nSec-1]*za;
+
+    // for(size_t i = 0; i < this->nSec; i++){
+    //     std::cout<<this->sections_ptr[i]->SEC_ID<<" "<<this->sections_ptr[i]->QQ<<" "<<this->sections_ptr[i]->ZZ<<std::endl;
+    // }
 
     for(int i = 0; i< this->nSec; i++){
         this->sections_ptr[i]->Q[this->t] = this->sections_ptr[i]->QQ;
