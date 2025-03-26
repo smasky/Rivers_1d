@@ -111,6 +111,52 @@ class NetworkMike():
         
         #Simulation
         t = 1
+        record = np.zeros(self.nt)
+        
+        #hot
+        temp =0
+        
+        while temp < 1000:
+            temp += 1
+            B = np.zeros((self.nInNode, 1))
+            A = np.zeros((self.nInNode, self.nInNode))
+            
+            for rvID, rv in self.RVs.items():
+                
+                for rchID in rv.outRchIDs:
+                    rch = rv.RCHs_[rchID]
+                    rch_ = rv.RCHs[rchID]
+                    rch.compute_outer_coefficients()
+                    nodeID, coe_z, const_z = rch.get_node_coe()
+                    B[nodeID-1, 0] += const_z
+                    A[nodeID-1, nodeID-1] += coe_z
+                
+                for rchID in rv.inRchIDs:
+                    rch = rv.RCHs_[rchID]
+                    rch.compute_inner_coefficients()
+                    fdID, bdID, alpha, beta, zeta = rch.get_fd_coe()
+                    bdID, fdID, sita, eta, gama = rch.get_bd_coe()
+                    
+                    B[fdID-1, 0] += alpha
+                    A[fdID-1, fdID-1] += beta
+                    A[fdID-1, bdID-1] += zeta
+                    
+                    B[bdID-1, 0] += sita
+                    A[bdID-1, bdID-1] += eta
+                    A[bdID-1, fdID-1] += gama
+            p, l, u = lu(A)
+            y = solve(p.dot(l), B)
+            Z = solve(u, y)
+            
+            for rvID, rv in self.RVs.items():
+                for rchID in rv.outRchIDs:
+                    rch = rv.RCHs_[rchID]
+                    rch.recompute_QZ(Z[rch.innerNodeID-1, 0])
+                
+                for rchID in rv.inRchIDs:
+                    rch = rv.RCHs_[rchID]
+                    rch.recompute_QZ(Z[rch.fdNodeID-1, 0], Z[rch.bdNodeID-1, 0])
+        
         while t < self.nt:
             t+=1
             print(t)
@@ -121,6 +167,7 @@ class NetworkMike():
                 
                 for rchID in rv.outRchIDs:
                     rch = rv.RCHs_[rchID]
+                    rch_ = rv.RCHs[rchID]
                     rch.compute_outer_coefficients()
                     nodeID, coe_z, const_z = rch.get_node_coe()
                     B[nodeID-1, 0] += const_z
@@ -156,7 +203,10 @@ class NetworkMike():
                 for rchID, rch in rv.RCHs_.items():
                     rch.update_t()
             
-            print(Z) 
+            record[t-1] = Z[0, 0]
+            print(Z[0, 0])
+        print(self.RVs[1].SECs[101].mil)
+        np.savetxt("record.txt", np.array(self.RVs[1].SECs[101].Z_Series))
     
     def readBranch(self, path):
         
@@ -225,70 +275,29 @@ class NetworkMike():
         with open(path, 'r') as f:
             lines = f.readlines()
             
-            for rvID, rv in self.RVs.items():
-                name = rv.name
-                
-                i = 0
-                while i < len(lines):
-                    
-                    if name in lines[i]:
-                        mil = float(lines[i+1])
-                    
-                    if "PROFILE" in lines[i]:
-                        line = lines[i].strip().split()
-                        num = int(line[1])
-                        data = np.zeros((num, 3), dtype = np.float32)
-                        for j in range(i+1, i+1+num):
-                            line = lines[j].strip().split()
-                            data[j-i-1] = [float(line[0]), float(line[1]), 0.02]
-                        
-                        rv.addSec(mil, data)
+            i = 0
+            while i < len(lines):
+                if "COORDINATES" in lines[i]:
+                    name = lines[i-2].strip()
+                    rvID = self.NAtoID_RV[name]
+                    rv = self.RVs[rvID]
+                    mil = float(lines[i-1])
                     i += 1
-    # def readSecInfo(self, path):
-        
-    #     with open(path, 'r') as f:
-    #         lines = f.readlines()
-
-    #         totalL = len(lines)
-    #         i=0
-    #         while True:
+                    continue
                 
-    #             if i >= totalL:
-    #                 break
-                
-    #             line = lines[i]
-    #             match = re.match("Name\s*(\w+)", line)
-                
-    #             if match:
-    #                 name = match.group(1); rvID = self.NAtoID_RV[name]
-    #                 i += 1
-    #                 mil = float(re.match("Mileage\s*(\d+(\.\d+)?)", lines[i]).group(1))
-    #                 i += 1
-    #                 rough = float(re.match("Roughness\s*(\d+(\.\d+)?)", lines[i]).group(1))
-    #                 i += 1
-    #                 num = int(re.match("Num\s*(\d+)", lines[i]).group(1))
-    #                 i += 1
+                if "PROFILE" in lines[i]:
+                    line = lines[i].strip().split()
+                    num = int(line[1])
+                    data = np.zeros((num, 3), dtype = np.float32)
+                    for j in range(i+1, i+1+num):
+                        line = lines[j].strip().split()
+                        data[j-i-1] = [float(line[0]), float(line[1]), 0.023]
+                    rv.addSec(mil, data)
+                    i += 1+num
+                    continue
                     
-    #                 data = np.zeros((num, 3), dtype = np.float32)
-                    
-    #                 for j in range(num):
-                        
-    #                     line = lines[i].strip().split()
-    #                     if len(line) == 2:
-    #                         x, y = line
-    #                         r = rough
-    #                     else:
-    #                         x, y, r = line
-                        
-    #                     data[j] = [x, y, r]
-                    
-    #                     i += 1
-                    
-    #                 self.RVs[rvID].addSec(mil, data)
-
-    #             else:
-    #                 i += 1
-    
+                i += 1
+                     
     def readBoundary(self, path):
         
          with open(path, 'r') as f:
@@ -317,7 +326,7 @@ class NetworkMike():
                     
                     for j in range(num):
                         
-                        timePattern = r"(\d{4})[-/](\d{1,2})[-/](\d{1,2})\s(\d{1,2}):(\d{2})(?::(\d{2}))?\s*(\d+(\.\d+)?)"
+                        timePattern = r"(\d{4})[-/](\d{1,2})[-/](\d{1,2})\s(\d{1,2}):(\d{2})(?::(\d{2}))?\s*(-?\d+(\.\d+)?)"
 
 
                         timeMatch = re.match(timePattern, lines[i])
@@ -349,7 +358,9 @@ class NetworkMike():
         
         for _, sec in rv.SECs.items():
             sec.Q_Series = np.ascontiguousarray(np.ones(nt) * self.initQ)
-            sec.Z_Series = np.ascontiguousarray(np.ones(nt) * self.initZ)
+            
+            botZ = np.min(sec.ySec)
+            sec.Z_Series = np.ascontiguousarray(np.ones(nt) * (botZ+self.initZ))
             
             
         
