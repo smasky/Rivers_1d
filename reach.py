@@ -15,9 +15,11 @@ class Reach():
 
 class OutsideReach(Reach):
     
-    def __init__(self, ID, fdNodeInfos, bdNodeInfos):
+    def __init__(self, ID, fdNodeInfos, bdNodeInfos, BoundInfos):
         
         super().__init__(ID, fdNodeInfos, bdNodeInfos)
+        
+        self.BoundInfos = BoundInfos
         
         if bdNodeInfos[1] == bdNodeInfos[2]:
             self.reverse = 1

@@ -1,7 +1,6 @@
-import bisect
+import numpy as np
 from section import Section
 from reach import Reach, OutsideReach, InnerReach
-from boundary import Boundary
 class River():
     
     def __init__(self, name, ID, length):
@@ -53,24 +52,32 @@ class River():
         self.QQ[mil] = sec.Q
         self.ZZ[mil] = sec.Z
     
-    def addBoundary(self, mil, T, data):
+    def addBoundary(self, mil, T, OBdata, nt):
+        
+        timeSer = np.arange(0, nt, 1)
+        simData = np.zeros((nt, 1))
+        
+        insertValue = np.interp(timeSer, OBdata[:, 0], OBdata[:, 1])
+        simData[:, 0] = insertValue
+        
+        simData = np.ascontiguousarray(simData)
         
         if mil == self.length:
-            self.BDs[1] = Boundary(self.ID, T, data)
+            self.BDs[1] = (self.ID, T, simData, OBdata)
         else:
-            self.BDs[0] = Boundary(self.ID, T, data)
-    
+            self.BDs[0] = (self.ID, T, simData, OBdata)
+                        
     def reachInit(self):
         
         self.nodeInfos.sort()
         
         ID_RCH = 0
         
-        if self.nodeInfos[0][0] >= 0.0:
+        if self.nodeInfos[0][0] > 0.0:
             self.nOutRch += 1
             self.nodeInfos.insert( 0, (0.0, 0, 1) )
             
-        if self.nodeInfos[0][0] <= self.length:
+        if self.nodeInfos[-1][0] < self.length:
             self.nOutRch += 1
             self.nodeInfos.append( (self.length, 1, 1) )
         
@@ -79,7 +86,14 @@ class River():
             ID_RCH += 1
             
             if( self.nodeInfos[i][-1] or self.nodeInfos[i+1][-1] ):
-                reach = OutsideReach(ID_RCH, self.nodeInfos[i], self.nodeInfos[i+1])
+                
+                if self.nodeInfos[i+1][1] == self.nodeInfos[i+1][2]:
+                    boundInfos = self.BDs[1]
+                else:
+                    boundInfos = self.BDs[0]
+                    
+                reach = OutsideReach(ID_RCH, self.nodeInfos[i], self.nodeInfos[i+1], boundInfos)
+                
                 self.outRchIDs.append(ID_RCH)
             else:
                 reach = InnerReach(ID_RCH, self.nodeInfos[i], self.nodeInfos[i+1])

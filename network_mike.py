@@ -6,8 +6,8 @@ from river import River
 from river1D import Section, OuterReach, InnerReach
 from scipy.linalg import solve, lu
 
-class Network():
-    def __init__(self, riverPath, nodePath, sectionPath, boundaryPath, settingPath):
+class NetworkMike():
+    def __init__(self, branchPath, secPath, boundaryPath, settingPath):
         
         self.nRV = 0
         self.nInND = 0 
@@ -15,16 +15,22 @@ class Network():
         
         self.NAtoID_RV = {}
         self.RVs = {}
-        #Basic setting
+        
         self.readSetting(settingPath)
-        #River info
-        self.readRiverInfo(riverPath)
-        #Node info
-        self.readNodeInfo(nodePath)
-        #Section info
-        self.readSecInfo(sectionPath)
-        #Boundary info
-        self.readBoundary(boundaryPath)
+        self.readBranch(branchPath) #river node info
+        self.readSec(secPath) #section info
+        self.readBoundary(boundaryPath) #boundary info
+        
+        #Basic setting
+        # self.readSetting(settingPath)
+        # #River info
+        # self.readRiverInfo(riverPath)
+        # #Node info
+        # self.readNodeInfo(nodePath)
+        # #Section info
+        # self.readSecInfo(sectionPath)
+        # #Boundary info
+        # self.readBoundary(boundaryPath)
         #River init
         self.riverInit()
     
@@ -59,7 +65,7 @@ class Network():
             else:
                 self.simEnd = datetime(int(year), int(month), int(day), int(hour), int(minute), int(second))
         
-        self.simDuration = (self.simEnd - self.simBegin).total_seconds()
+        self.simDuration = (self.simEnd - self.simBegin).total_seconds()/self.dt
         
         
         
@@ -151,95 +157,137 @@ class Network():
                     rch.update_t()
             
             print(Z) 
-                
-    def readRiverInfo(self, path):
-        
-        ID_RV = 0
+    
+    def readBranch(self, path):
         
         with open(path, 'r') as f:
-            
             lines = f.readlines()
             
             for line in lines:
-                
-                ID_RV += 1
                 line = line.strip().split()
                 name = line[0]
-                length = float(line[1])
+                ID_RV = int(line[1])
+                length = float(line[3])
                 
                 self.NAtoID_RV[name] = ID_RV
                 self.RVs[ID_RV] = River(name, ID_RV, length)
-
-            self.nRV = ID_RV
             
-    def readNodeInfo(self, path):
-        
-        ID_ND = 0
-        
-        with open(path, 'r') as f:
+            self.nRV = len(self.NAtoID_RV)
             
-            lines = f.readlines()
+            tmpNodes = []
             
             for line in lines:
-                if line != '':
-                    line = line.strip().split()
-                    num = int(len(line) / 2)
+                
+                line = line.strip().split()
+                
+                ind = line.index("Regular")
+                
+                num = int((len(line) - 1 - ind)/2)
+                
+                nodes = []
+                for i in range(num):
                     
-                    ID_ND += 1
+                    name = line[ind + 1 + 2 * i]
+                    ID_RV = self.NAtoID_RV[name]
+                    mile = float(line[ind + 2 + 2 * i])
+                    nodes.append((ID_RV, mile))
                     
-                    # Add nodes to rivers
-                    for i in range(num):
-                        name = line[2 * i]
-                        mileage = float(line[2 * i + 1])
-                        ID = self.NAtoID_RV[name]
-                        self.RVs[ID].addNode(mileage, ID_ND, 0)
-                        
+                if len(nodes) > 0:
+                    ID_RV = self.NAtoID_RV[line[0]]
+                    mil = float(line[3])
+                    nodes.append((ID_RV, mil))
+                    tmpNodes.append(nodes)
+                
+        innerNodes = []
+        for i in range(len(tmpNodes)):
+            merged_with_new = tmpNodes[i]
+            for j in range(len(tmpNodes)):
+                
+                common_elements = set(tmpNodes[i]) & set(tmpNodes[j])
+                if len(common_elements) > 0 and i != j:
+                    merged_with_new = list(set(tmpNodes[i] + tmpNodes[j]))
+                    
+            if merged_with_new not in innerNodes:    
+                innerNodes.append(merged_with_new)
+        
+        ID_ND = 0    
+        for i in range(len(innerNodes)):
+            ID_ND += 1
+            for j in range(len(innerNodes[i])):
+                ID_RV = innerNodes[i][j][0]
+                mile = innerNodes[i][j][1]
+                self.RVs[ID_RV].addNode(mile, ID_ND, 0)
+        
         self.nInNode = ID_ND
-    
-    def readSecInfo(self, path):
+
+    def readSec(self, path):
         
         with open(path, 'r') as f:
             lines = f.readlines()
-
-            totalL = len(lines)
-            i=0
-            while True:
+            
+            for rvID, rv in self.RVs.items():
+                name = rv.name
                 
-                if i >= totalL:
-                    break
-                
-                line = lines[i]
-                match = re.match("Name\s*(\w+)", line)
-                
-                if match:
-                    name = match.group(1); rvID = self.NAtoID_RV[name]
-                    i += 1
-                    mil = float(re.match("Mileage\s*(\d+(\.\d+)?)", lines[i]).group(1))
-                    i += 1
-                    rough = float(re.match("Roughness\s*(\d+(\.\d+)?)", lines[i]).group(1))
-                    i += 1
-                    num = int(re.match("Num\s*(\d+)", lines[i]).group(1))
-                    i += 1
+                i = 0
+                while i < len(lines):
                     
-                    data = np.zeros((num, 3), dtype = np.float32)
+                    if name in lines[i]:
+                        mil = float(lines[i+1])
                     
-                    for j in range(num):
-                        
+                    if "PROFILE" in lines[i]:
                         line = lines[i].strip().split()
-                        if len(line) == 2:
-                            x, y = line
-                            r = rough
-                        else:
-                            x, y, r = line
+                        num = int(line[1])
+                        data = np.zeros((num, 3), dtype = np.float32)
+                        for j in range(i+1, i+1+num):
+                            line = lines[j].strip().split()
+                            data[j-i-1] = [float(line[0]), float(line[1]), 0.02]
                         
-                        data[j] = [x, y, r]
-                    
-                        i += 1
-                    
-                    self.RVs[rvID].addSec(mil, data)
-
-                else:
+                        rv.addSec(mil, data)
                     i += 1
+    # def readSecInfo(self, path):
+        
+    #     with open(path, 'r') as f:
+    #         lines = f.readlines()
+
+    #         totalL = len(lines)
+    #         i=0
+    #         while True:
+                
+    #             if i >= totalL:
+    #                 break
+                
+    #             line = lines[i]
+    #             match = re.match("Name\s*(\w+)", line)
+                
+    #             if match:
+    #                 name = match.group(1); rvID = self.NAtoID_RV[name]
+    #                 i += 1
+    #                 mil = float(re.match("Mileage\s*(\d+(\.\d+)?)", lines[i]).group(1))
+    #                 i += 1
+    #                 rough = float(re.match("Roughness\s*(\d+(\.\d+)?)", lines[i]).group(1))
+    #                 i += 1
+    #                 num = int(re.match("Num\s*(\d+)", lines[i]).group(1))
+    #                 i += 1
+                    
+    #                 data = np.zeros((num, 3), dtype = np.float32)
+                    
+    #                 for j in range(num):
+                        
+    #                     line = lines[i].strip().split()
+    #                     if len(line) == 2:
+    #                         x, y = line
+    #                         r = rough
+    #                     else:
+    #                         x, y, r = line
+                        
+    #                     data[j] = [x, y, r]
+                    
+    #                     i += 1
+                    
+    #                 self.RVs[rvID].addSec(mil, data)
+
+    #             else:
+    #                 i += 1
     
     def readBoundary(self, path):
         
@@ -269,10 +317,11 @@ class Network():
                     
                     for j in range(num):
                         
-                        timePattern = r"(\d{4})[-/](\d{2})[-/](\d{2}) (\d{1,2}):(\d{2})(?::(\d{2}))?\s*(\d+)"
-                        
+                        timePattern = r"(\d{4})[-/](\d{1,2})[-/](\d{1,2})\s(\d{1,2}):(\d{2})(?::(\d{2}))?\s*(\d+(\.\d+)?)"
+
+
                         timeMatch = re.match(timePattern, lines[i])
-                        year, month, day, hour, minute, second, value = timeMatch.groups()
+                        year, month, day, hour, minute, second, value, _ = timeMatch.groups()
                         
                         second = second if second else "00"
                         
