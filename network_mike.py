@@ -9,28 +9,17 @@ from scipy.linalg import solve, lu
 class NetworkMike():
     def __init__(self, branchPath, secPath, boundaryPath, settingPath):
         
-        self.nRV = 0
-        self.nInND = 0 
-        self.t = 1
+        self.nRV = 0 #number of river
+        self.t = 1 #time step
         
-        self.NAtoID_RV = {}
-        self.RVs = {}
+        self.NAtoID_RV = {} #name to ID of river
+        self.RVs = {} #river dictionary
         
-        self.readSetting(settingPath)
+        self.readSetting(settingPath) #read setting
         self.readBranch(branchPath) #river node info
         self.readSec(secPath) #section info
         self.readBoundary(boundaryPath) #boundary info
         
-        #Basic setting
-        # self.readSetting(settingPath)
-        # #River info
-        # self.readRiverInfo(riverPath)
-        # #Node info
-        # self.readNodeInfo(nodePath)
-        # #Section info
-        # self.readSecInfo(sectionPath)
-        # #Boundary info
-        # self.readBoundary(boundaryPath)
         #River init
         self.riverInit()
     
@@ -67,22 +56,21 @@ class NetworkMike():
         
         self.simDuration = (self.simEnd - self.simBegin).total_seconds()/self.dt
         
-        
-        
-    def simPressimann(self):
+    def sim_PRSM(self):
                 
         for rvID, rv in self.RVs.items():
             
-            self.extendTimeSeries(rv)
+            rv.initSec(self.initQ, self.initZ, self.nt)
             
             for secID, sec in rv.SECs.items():
                 mil = sec.mil
+                roughness = 0.02 #TODO TEMP
                 for rchID, rch in rv.RCHs.items():
                     fdMil = rch.fdNodeInfos[0]
                     bdMil = rch.bdNodeInfos[0]
                     
                     if mil >= fdMil and mil <= bdMil:
-                        cSec = Section.createSection(secID, rchID, rvID, mil, sec.nPoint, sec.xSec, sec.ySec, sec.rSec, self.nt, sec.Q_Series, sec.Z_Series)
+                        cSec = Section.createSection(secID, rchID, rvID, mil, roughness, sec.hydraulicInfo['nY'], sec.hydraulicInfo['areaList'], sec.hydraulicInfo['wpList'], sec.hydraulicInfo['bsList'], sec.hydraulicInfo['yList'], self.nt, sec.Q_Series, sec.Z_Series)
                         cSec.compute_hydraulic_basic()
                         rch.addSec(cSec)
                     
@@ -205,7 +193,7 @@ class NetworkMike():
                     rch.update_t()
             
             record[t-1] = Z[0, 0]
-            
+        np.savetxt("record.txt", np.array(self.RVs[2].SECs[50].Z_Series))
     def readBranch(self, path):
         
         with open(path, 'r') as f:

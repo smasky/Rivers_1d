@@ -8,23 +8,26 @@
 
 namespace py = pybind11;
 
-std::shared_ptr<Section> createSection(size_t SEC_ID, size_t RCH_ID, size_t RV_ID, double MIL,
-                            size_t nPoint, py::array_t<double> xSec_array, py::array_t<double> ySec_array, py::array_t<double> rSec_array,
+std::shared_ptr<Section> createSection(size_t SEC_ID, size_t RCH_ID, size_t RV_ID, double MIL, double roughness,
+                            // size_t nPoint, py::array_t<double> xSec_array, py::array_t<double> ySec_array, py::array_t<double> rSec_array,
+                            size_t nY, py::array_t<double> areaList_array, py::array_t<double> wpList_array, py::array_t<double> bsList_array, py::array_t<double> yList_array,
                             size_t nT, py::array_t<double> Q_array, py::array_t<double> Z_array){
 
-    py::buffer_info xSec_buf = xSec_array.request(true); 
-    py::buffer_info ySec_buf = ySec_array.request(true);
-    py::buffer_info rSec_buf = rSec_array.request(true);
+    py::buffer_info areaList_buf = areaList_array.request(true); 
+    py::buffer_info wpList_buf = wpList_array.request(true);
+    py::buffer_info bsList_buf = bsList_array.request(true);
+    py::buffer_info yList_buf = yList_array.request(true);
     py::buffer_info Q_buf = Q_array.request(true);
     py::buffer_info Z_buf = Z_array.request(true);
     
-    double *xSec = static_cast<double*>(xSec_buf.ptr);
-    double *ySec = static_cast<double*>(ySec_buf.ptr);
-    double *rSec = static_cast<double*>(rSec_buf.ptr);
+    double *areaList = static_cast<double*>(areaList_buf.ptr);
+    double *wpList = static_cast<double*>(wpList_buf.ptr);
+    double *bsList = static_cast<double*>(bsList_buf.ptr);
+    double *yList = static_cast<double*>(yList_buf.ptr);
     double *Q = static_cast<double*>(Q_buf.ptr);
     double *Z = static_cast<double*>(Z_buf.ptr);
 
-    auto section = std::make_shared<Section>(SEC_ID, RCH_ID, RV_ID, MIL, nPoint, xSec, ySec, rSec, nT, Q, Z);
+    auto section = std::make_shared<Section>(SEC_ID, RCH_ID, RV_ID, MIL, roughness, nY, areaList, wpList, bsList, yList, nT, Q, Z);
     
     return section;
 }
@@ -52,9 +55,9 @@ PYBIND11_MODULE(river1D, m) {
         .def_property("MIL", 
             [](const Section& self) { return self.MIL; },  // getter
             [](Section& self, double value) { self.MIL = value; })
-        .def_property("nPoint", 
-            [](const Section& self) { return self.nPoint; },  // getter
-            [](Section& self, size_t value) { self.nPoint = value; })
+        // .def_property("nPoint", 
+        //     [](const Section& self) { return self.nPoint; },  // getter
+        //     [](Section& self, size_t value) { self.nPoint = value; })
         .def_property("b", 
             [](const Section& self) { return self.b; },  // getter
             [](Section& self, double value) { self.b = value; })
@@ -79,7 +82,7 @@ PYBIND11_MODULE(river1D, m) {
         .def_property("ZZ", 
             [](const Section& self) { return self.ZZ; },  // getter
             [](Section& self, double value) { self.ZZ = value; })
-        .def("print_info", &Section::print_info)
+        // .def("print_info", &Section::print_info)
         .def("compute_hydraulic_basic", &Section::compute_hydraulic_basic);
     
     py::class_<OuterReach, std::shared_ptr<OuterReach>>(m, "OuterReach")

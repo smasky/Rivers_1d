@@ -12,3 +12,4 @@ class Section():
         self.xSec = np.ascontiguousarray(pointData[:, 0], dtype=np.float64)
         self.ySec = np.ascontiguousarray(pointData[:, 1], dtype=np.float64)
         self.rSec = np.ascontiguousarray(pointData[:, 2], dtype=np.float64)
+        self.hydraulicInfo = {}
