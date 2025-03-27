@@ -83,6 +83,7 @@ class NetworkMike():
                     
                     if mil >= fdMil and mil <= bdMil:
                         cSec = Section.createSection(secID, rchID, rvID, mil, sec.nPoint, sec.xSec, sec.ySec, sec.rSec, self.nt, sec.Q_Series, sec.Z_Series)
+                        cSec.compute_hydraulic_basic()
                         rch.addSec(cSec)
                     
             for rchID in rv.outRchIDs:
@@ -116,7 +117,7 @@ class NetworkMike():
         #hot
         temp =0
         
-        while temp < 1000:
+        while temp < 200:
             temp += 1
             B = np.zeros((self.nInNode, 1))
             A = np.zeros((self.nInNode, self.nInNode))
@@ -159,7 +160,7 @@ class NetworkMike():
         
         while t < self.nt:
             t+=1
-            print(t)
+            
             B = np.zeros((self.nInNode, 1))
             A = np.zeros((self.nInNode, self.nInNode))
             
@@ -204,10 +205,7 @@ class NetworkMike():
                     rch.update_t()
             
             record[t-1] = Z[0, 0]
-            print(Z[0, 0])
-        print(self.RVs[1].SECs[101].mil)
-        np.savetxt("record.txt", np.array(self.RVs[1].SECs[101].Z_Series))
-    
+            
     def readBranch(self, path):
         
         with open(path, 'r') as f:
@@ -291,7 +289,7 @@ class NetworkMike():
                     data = np.zeros((num, 3), dtype = np.float32)
                     for j in range(i+1, i+1+num):
                         line = lines[j].strip().split()
-                        data[j-i-1] = [float(line[0]), float(line[1]), 0.023]
+                        data[j-i-1] = [float(line[0]), float(line[1]), 0.02]
                     rv.addSec(mil, data)
                     i += 1+num
                     continue
@@ -355,14 +353,12 @@ class NetworkMike():
     def extendTimeSeries(self, rv):
         
         nt = self.nt
-        
+                
         for _, sec in rv.SECs.items():
             sec.Q_Series = np.ascontiguousarray(np.ones(nt) * self.initQ)
             
             botZ = np.min(sec.ySec)
-            sec.Z_Series = np.ascontiguousarray(np.ones(nt) * (botZ+self.initZ))
-            
-            
+            sec.Z_Series = np.ascontiguousarray(np.ones(nt) * (botZ+self.initZ)) 
         
             
                 

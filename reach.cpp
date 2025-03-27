@@ -30,8 +30,8 @@ void Reach::compute_basic_coefficients() {
 
         dx = fabs(bdSec->MIL - fdSec->MIL);
 
-        sa = fabs(fdSec->u) * 9.81 * pow(fdSec->rSec[0], 2) * dx / (fdSec->r * 2 * this->dev_sita);//TODO using sec roughness
-        sb = fabs(bdSec->u) * 9.81 * pow(bdSec->rSec[0], 2) * dx / (bdSec->r * 2 * this->dev_sita);
+        sa = fabs(fdSec->u) * 9.81 * pow(fdSec->rSec[0], 2) * dx / (pow(fdSec->r, 4.0/3) * 2 * this->dev_sita);//TODO using sec roughness
+        sb = fabs(bdSec->u) * 9.81 * pow(bdSec->rSec[0], 2) * dx / (pow(bdSec->r, 4.0/3) * 2 * this->dev_sita);
 
         bc = (fdSec->b + bdSec->b) / 2;
         c = bc * dx / ( 2 * this->dt * this->dev_sita );
