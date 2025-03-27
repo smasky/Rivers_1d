@@ -191,12 +191,7 @@ void OuterReach::recompute_QZ(double z_compute) {
         this->sections_ptr[i]->QQ = q;
         this->sections_ptr[i]->ZZ = z;
 
-        // std::cout<<this->sections_ptr[i]->SEC_ID<<" "<<this->sections_ptr[i]->QQ<<" "<<this->sections_ptr[i]->ZZ<<std::endl;
     }
-
-    // for(size_t i = 0; i < this->nSec; i++){
-    //     std::cout<<this->sections_ptr[i]->SEC_ID<<" "<<this->sections_ptr[i]->QQ<<" "<<this->sections_ptr[i]->ZZ<<std::endl;
-    // }
 
     if(this->reverse == 1){
         //TODO:check right
@@ -212,7 +207,6 @@ void OuterReach::recompute_QZ(double z_compute) {
     }
     
 }
-
 
 InnerReach::InnerReach(size_t RV_ID, size_t RCH_ID, size_t nSec, size_t fdNodeID, size_t bdNodeID, 
                     std::vector<std::shared_ptr<Section>> &sections_ptr, 
