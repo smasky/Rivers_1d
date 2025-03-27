@@ -359,12 +359,3 @@ class NetworkMike():
             
             botZ = np.min(sec.ySec)
             sec.Z_Series = np.ascontiguousarray(np.ones(nt) * (botZ+self.initZ)) 
-        
-            
-                
-                
-        
-        
-        
-        
-        
