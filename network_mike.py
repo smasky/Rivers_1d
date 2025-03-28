@@ -70,8 +70,7 @@ class NetworkMike():
                     bdMil = rch.bdNodeInfos[0]
                     
                     if mil >= fdMil and mil <= bdMil:
-                        cSec = Section.createSection(secID, rchID, rvID, mil, roughness, sec.hydraulicInfo['nY'], sec.hydraulicInfo['areaList'], sec.hydraulicInfo['wpList'], sec.hydraulicInfo['bsList'], sec.hydraulicInfo['yList'], self.nt, sec.Q_Series, sec.Z_Series)
-                        cSec.compute_hydraulic_basic()
+                        cSec = Section.createSection(secID, rchID, rvID, mil, roughness, sec.nPoint, sec.xSec, sec.ySec, sec.rSec, self.nt, sec.Q_Series, sec.Z_Series)
                         rch.addSec(cSec)
                     
             for rchID in rv.outRchIDs:
@@ -193,7 +192,8 @@ class NetworkMike():
                     rch.update_t()
             
             record[t-1] = Z[0, 0]
-        np.savetxt("record.txt", np.array(self.RVs[2].SECs[50].Z_Series))
+        np.savetxt("record.txt", np.array(self.RVs[2].SECs[50].Q_Series))
+        
     def readBranch(self, path):
         
         with open(path, 'r') as f:

@@ -39,70 +39,70 @@ class River():
             sec.Z_Series = np.ascontiguousarray(np.ones(nt) * (botZ + initZ))
             
             #compute the hydraulic list for each section
-            xSec, ySec = sec.xSec, sec.ySec
-            #TODO Updating: default, the water only flow through the range of left and right highest point
-            minI = np.argmin(ySec)
-            leftHI = np.argmax(ySec[:minI])
-            rightHI = np.argmax(ySec[minI:]) + minI
+            # xSec, ySec = sec.xSec, sec.ySec
+            # #TODO Updating: default, the water only flow through the range of left and right highest point
+            # minI = np.argmin(ySec)
+            # leftHI = np.argmax(ySec[:minI])
+            # rightHI = np.argmax(ySec[minI:]) + minI
             
-            effect_ySec = ySec[leftHI:rightHI+1]
-            effect_xSec = xSec[leftHI:rightHI+1]
+            # effect_ySec = ySec[leftHI:rightHI+1]
+            # effect_xSec = xSec[leftHI:rightHI+1]
             
-            i = 0; equalY = []
-            while i < len(effect_ySec):
-                y = effect_ySec[i]
-                j = i
-                while j+1 < len(effect_ySec) and effect_ySec[j+1] == y:
-                    j += 1
-                if j > i:
-                    equalY.append((i, j, y))
-                i = j+1
+            # i = 0; equalY = []
+            # while i < len(effect_ySec):
+            #     y = effect_ySec[i]
+            #     j = i
+            #     while j+1 < len(effect_ySec) and effect_ySec[j+1] == y:
+            #         j += 1
+            #     if j > i:
+            #         equalY.append((i, j, y))
+            #     i = j+1
             
         
-            calYSec = np.ascontiguousarray(np.unique(np.concatenate((effect_ySec, 
-                            [effect_ySec[j] + 1e-6 for i, j, y in equalY])), axis=0))
-            calYSec.sort()
+            # calYSec = np.ascontiguousarray(np.unique(np.concatenate((effect_ySec, 
+            #                 [effect_ySec[j] + 1e-6 for i, j, y in equalY])), axis=0))
+            # calYSec.sort()
 
-            areaList = np.ascontiguousarray(np.zeros(len(calYSec)))
-            wpList = np.ascontiguousarray(np.zeros(len(calYSec)))
-            bsList = np.ascontiguousarray(np.zeros(len(calYSec)))
-            for n, y in enumerate(calYSec):
-                area = 0
-                wp = 0
-                bs = 0
-                for i in range(len(effect_xSec)-1):
-                    x1 = effect_xSec[i]
-                    x2 = effect_xSec[i+1]
-                    y1 = effect_ySec[i]
-                    y2 = effect_ySec[i+1]
+            # areaList = np.ascontiguousarray(np.zeros(len(calYSec)))
+            # wpList = np.ascontiguousarray(np.zeros(len(calYSec)))
+            # bsList = np.ascontiguousarray(np.zeros(len(calYSec)))
+            # for n, y in enumerate(calYSec):
+            #     area = 0
+            #     wp = 0
+            #     bs = 0
+            #     for i in range(len(effect_xSec)-1):
+            #         x1 = effect_xSec[i]
+            #         x2 = effect_xSec[i+1]
+            #         y1 = effect_ySec[i]
+            #         y2 = effect_ySec[i+1]
                     
-                    if y <= min(y1, y2):
-                        continue
+            #         if y <= min(y1, y2):
+            #             continue
                     
-                    delta1 = y - y1
-                    delta2 = y - y2
-                    delta_x = x2 - x1
+            #         delta1 = y - y1
+            #         delta2 = y - y2
+            #         delta_x = x2 - x1
                     
-                    if delta1 < 0:
-                        delta1 = 0
-                        delta_x = delta2 / (y1 - y2) * delta_x
-                    elif delta2 < 0:
-                        delta2 = 0
-                        delta_x = -delta1 / (y1 - y2) * delta_x
+            #         if delta1 < 0:
+            #             delta1 = 0
+            #             delta_x = delta2 / (y1 - y2) * delta_x
+            #         elif delta2 < 0:
+            #             delta2 = 0
+            #             delta_x = -delta1 / (y1 - y2) * delta_x
                     
-                    bs = bs + delta_x
-                    area = area + 0.5 * (delta1 + delta2) * delta_x
-                    wp = wp + np.sqrt(pow(delta1 - delta2, 2) + pow(delta_x, 2))
+            #         bs = bs + delta_x
+            #         area = area + 0.5 * (delta1 + delta2) * delta_x
+            #         wp = wp + np.sqrt(pow(delta1 - delta2, 2) + pow(delta_x, 2))
                 
-                areaList[n] = area
-                wpList[n] = wp
-                bsList[n] = bs
+            #     areaList[n] = area
+            #     wpList[n] = wp
+            #     bsList[n] = bs
 
-            sec.hydraulicInfo['nY'] = calYSec.size
-            sec.hydraulicInfo['yList'] = calYSec
-            sec.hydraulicInfo['areaList'] = areaList
-            sec.hydraulicInfo['wpList'] = wpList
-            sec.hydraulicInfo['bsList'] = bsList
+            # sec.hydraulicInfo['nY'] = calYSec.size
+            # sec.hydraulicInfo['yList'] = calYSec
+            # sec.hydraulicInfo['areaList'] = areaList
+            # sec.hydraulicInfo['wpList'] = wpList
+            # sec.hydraulicInfo['bsList'] = bsList
               
     def addNode(self, mil, nodeID, T):
         
